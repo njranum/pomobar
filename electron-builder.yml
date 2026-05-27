@@ -1,6 +1,7 @@
-appId: com.electron.app
-productName: pomobar-temp
+appId: com.njr.pomobar
+productName: pomobar
 directories:
+  output: release
   buildResources: build
 files:
   - '!**/.vscode/*'
@@ -19,6 +20,12 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  identity: null
+  category: public.app-category.productivity
+  target:
+    - target: dir
+      arch:
+        - arm64
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
