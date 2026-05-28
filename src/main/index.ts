@@ -2,6 +2,7 @@ import { app, Tray, nativeImage } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIcpHandlers } from './ipc'
+import store from './store'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -43,3 +44,5 @@ app.whenReady().then(() => {
     popover.focus()
   })
 })
+
+console.log('[main] store path:', store.path)
