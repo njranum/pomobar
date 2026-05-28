@@ -1,6 +1,7 @@
 import { app, Tray, nativeImage } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
+import { registerIcpHandlers } from './ipc'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -10,6 +11,9 @@ if (process.platform === 'darwin') {
 let tray: Tray | null = null
 
 app.whenReady().then(() => {
+  // test ipc connection
+  registerIcpHandlers()
+
   // Get the tray icon image
   const iconPath = app.isPackaged
     ? join(process.resourcesPath, 'tray-icon@2x.png')
