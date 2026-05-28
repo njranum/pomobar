@@ -17,7 +17,7 @@ app.whenReady().then(() => {
 
   // Get the tray icon image
   const iconPath = app.isPackaged
-    ? join(process.resourcesPath, 'tray-icon@2x.png')
+    ? join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'tray-icon@2x.png')
     : join(__dirname, '../../resources/tray-icon@2x.png')
   const trayIcon = nativeImage.createFromPath(iconPath)
   trayIcon.setTemplateImage(true)
