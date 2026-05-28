@@ -16,11 +16,16 @@ export function createPopover(): BrowserWindow {
     skipTaskbar: true,
     alwaysOnTop: true,
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.ts'),
+      preload: path.join(__dirname, '../preload/index.js'),
+      sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
+
+  if (process.env['ELECTRON_RENDERER_URL']) {
+    popover.webContents.openDevTools({ mode: 'detach' })
+  }
 
   // Load renderer
   if (process.env['ELECTRON_RENDERER_URL']) {
