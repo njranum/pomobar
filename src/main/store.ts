@@ -1,22 +1,26 @@
-import ElectronStore from 'electron-store'
-
+import Store from 'electron-store'
+import { DEFAULT_CONFIG } from '@/shared/types'
+import type { PomodoroConfig, SessionRecord } from '@/shared/types'
 // Create a skeleton schema
-export interface StoreSchema {
-  config: Record<string, never>
-  syncQueue: unknown[]
+
+interface PersistedState {
+  state: 'idle' | 'focus' | 'shortBreak' | 'longBreak' | 'paused' | 'planning'
+  sessionType: SessionRecord['type'] | null
+  startTime: string | null
+  accumulatedMs: number
+  LastTickAt: string | null
+  cyclePosition: number
+  task: string | null
 }
 
-const store = new ElectronStore<StoreSchema>({
-  schema: {
-    config: {
-      type: 'object',
-      default: {},
-    },
-    syncQueue: {
-      type: 'array',
-      default: [],
-    },
-  },
-})
+export interface StoreSchema {
+  config: PomodoroConfig
+  sessions: SessionRecord[]
+  syncQueue: string[]
+  lastState: PersistedState | null
+}
 
-export default store
+const store = new Store<StoreSchema>({
+  defaults: { config: DEFAULT_CONFIG, sessions: [], syncQueue: [], lastState: null },
+})
+export default store // default edxport matching store in ipc.ts
