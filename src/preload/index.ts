@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { IPC_CHANNELS } from '@/shared/ipc-channels'
+import { IpcChannels } from '@/shared/ipc-channels'
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -9,10 +9,9 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', {
-      ping: (): Promise<string> => ipcRenderer.invoke(IPC_CHANNELS.PING),
-      storeGet: (key: string): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.STORE_GET, key),
+      storeGet: (key: string): Promise<unknown> => ipcRenderer.invoke(IpcChannels.StoreGet, key),
       storeSet: (key: string, value: unknown): void =>
-        ipcRenderer.send(IPC_CHANNELS.STORE_SET, key, value),
+        ipcRenderer.send(IpcChannels.StoreGet, key, value),
     })
   } catch (error) {
     console.error(error)
