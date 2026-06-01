@@ -22,7 +22,7 @@ export interface EndedSession {
 class Timer extends EventEmitter {
   private state: AppState = 'idle'
   private session: ActiveSession | null = null
-  private completedInCycle = 0
+  private cyclePosition = 1
   private readonly interval: NodeJS.Timeout
 
   constructor() {
@@ -38,6 +38,8 @@ class Timer extends EventEmitter {
     if (!this.isOneOf('idle', 'shortBreak', 'longBreak')) {
       return this.reject('startFocus', this.state)
     }
+    // dev aid: trace focus starts while testing
+    console.info(`[timer] startFocus — task="${task.title}" cyclePosition=${this.cyclePosition}`)
     const { focusMinutes } = store.get('config')
     this.begin('focus', focusMinutes, task.title)
     this.state = 'focus'
@@ -46,6 +48,8 @@ class Timer extends EventEmitter {
 
   pause(): void {
     if (this.state !== 'focus' || !this.session) return this.reject('pause', this.state)
+    // dev aid: trace pauses while testing
+    console.info(`[timer] pause — remainingMs=${this.session.totalMs - this.elapsed()}`)
     this.session.accumulatedMs += Date.now() - this.session.startedAt
     this.state = 'paused'
     this.emitSnapshot()
@@ -53,6 +57,8 @@ class Timer extends EventEmitter {
 
   resume(): void {
     if (this.state !== 'paused' || !this.session) return this.reject('resume', this.state)
+    // dev aid: trace resumes while testing
+    console.info(`[timer] resume — task="${this.session.task}"`)
     this.session.startedAt = Date.now()
     this.state = 'focus'
     this.emitSnapshot()
@@ -60,6 +66,10 @@ class Timer extends EventEmitter {
 
   cancel(): void {
     if (!this.isOneOf('focus', 'paused') || !this.session) return this.reject('cancel', this.state)
+    // dev aid: trace cancels while testing
+    console.info(
+      `[timer] cancel — task="${this.session.task}" elapsedMs=${this.elapsed()} (not counted)`
+    )
     this.endSession(false) // doesn't count as completed
     this.state = 'idle'
     this.session = null
@@ -69,6 +79,10 @@ class Timer extends EventEmitter {
   endEarly(): void {
     if (!this.isOneOf('focus', 'paused') || !this.session)
       return this.reject('endEarly', this.state)
+    // dev aid: trace early completions while testing
+    console.info(
+      `[timer] endEarly — task="${this.session.task}" cyclePosition=${this.cyclePosition} (counts as complete)`
+    )
     this.completeFocus() // end early counts as completed
   }
 
@@ -79,11 +93,16 @@ class Timer extends EventEmitter {
       sessionType: this.session?.type ?? null,
       remainingMs: this.session ? Math.max(0, this.session.totalMs - this.elapsed()) : 0,
       totalMs: this.session?.totalMs ?? 0,
-      cyclePosition: this.completedInCycle,
+      cyclePosition: this.cyclePosition,
       pomodorosPerCycle: config.pomodorosPerCycle,
       task: this.session?.task ?? null,
       isPause: this.state === 'paused',
     }
+  }
+
+  completeNow(): void {
+    if (!this.session) return this.reject('completeNow', this.state)
+    this.onSessionComplete()
   }
 
   onSnapshot(listener: (s: TimerSnapshot) => void): this {
@@ -111,15 +130,15 @@ class Timer extends EventEmitter {
 
   private completeFocus(): void {
     if (!this.session) return
-    this.endSession(true)
-    this.completedInCycle += 1
     const { pomodorosPerCycle, shortBreakMinutes, longBreakMinutes } = store.get('config')
-    if (this.completedInCycle >= pomodorosPerCycle) {
-      this.begin('longBreak', longBreakMinutes, null)
-      this.state = 'longBreak'
-    } else {
+    this.endSession(true)
+    if (this.cyclePosition < pomodorosPerCycle) {
+      this.cyclePosition += 1
       this.begin('shortBreak', shortBreakMinutes, null)
       this.state = 'shortBreak'
+    } else {
+      this.begin('longBreak', longBreakMinutes, null)
+      this.state = 'longBreak'
     }
     this.emitSnapshot()
   }
@@ -128,7 +147,7 @@ class Timer extends EventEmitter {
     if (!this.session) return
     const wasLong = this.session.type === 'longBreak'
     this.endSession(true)
-    if (wasLong) this.completedInCycle = 0
+    if (wasLong) this.cyclePosition = 1
     this.state = 'idle'
     this.session = null
     this.emitSnapshot()
@@ -146,7 +165,7 @@ class Timer extends EventEmitter {
       totalMs: this.session.totalMs,
       elapsedMs: this.elapsed(),
       completed,
-      cyclePosition: this.completedInCycle,
+      cyclePosition: this.cyclePosition,
     } satisfies EndedSession)
   }
 

@@ -1,8 +1,10 @@
-import { app, Tray, nativeImage } from 'electron'
+import { app, Tray, nativeImage, Menu } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
-import { registerIcpHandlers } from './ipc'
-import { setPopoverWindow } from './broadcast'
+import { registerIpcHandlers } from './ipc'
+import { setPopoverWindow, broadcastSnapshot } from './broadcast'
+import timer from './timer'
+import { is } from '@electron-toolkit/utils'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -13,7 +15,7 @@ let tray: Tray | null = null
 
 app.whenReady().then(() => {
   // test ipc connection
-  registerIcpHandlers()
+  registerIpcHandlers()
 
   // Get the tray icon image
   const iconPath = app.isPackaged
@@ -30,6 +32,9 @@ app.whenReady().then(() => {
   const popover = createPopover()
   setPopoverWindow(popover)
 
+  // subscribe to the timer ticks
+  timer.onSnapshot(broadcastSnapshot)
+
   // Wire the popover to open /close when tray icon isPackaged
   tray.on('click', (_event, bounds) => {
     if (popover.isVisible()) {
@@ -44,4 +49,23 @@ app.whenReady().then(() => {
     popover.show()
     popover.focus()
   })
+
+  // Create manual pop up context menu to allow selection of timer states for testing
+  if (is.dev) {
+    const menuTray = tray
+    const devMenu = Menu.buildFromTemplate([
+      { label: 'Start Focus', click: () => timer.startFocus({ id: null, title: 'dev' }) },
+      {
+        label: 'Pause / Resume',
+        click: () => {
+          if (timer.getSnapshot().state === 'paused') timer.resume()
+          else timer.pause()
+        },
+      },
+      { label: 'Cancel', click: () => timer.cancel() },
+      { label: 'End Early', click: () => timer.endEarly() },
+      { label: 'Complete Now', click: () => timer.completeNow() },
+    ])
+    menuTray.on('right-click', () => menuTray.popUpContextMenu(devMenu))
+  }
 })
