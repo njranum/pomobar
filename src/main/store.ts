@@ -8,7 +8,7 @@ interface PersistedState {
   sessionType: SessionRecord['type'] | null
   startTime: string | null
   accumulatedMs: number
-  LastTickAt: string | null
+  lastTickAt: string | null
   cyclePosition: number
   task: string | null
 }
@@ -23,4 +23,4 @@ export interface StoreSchema {
 const store = new Store<StoreSchema>({
   defaults: { config: DEFAULT_CONFIG, sessions: [], syncQueue: [], lastState: null },
 })
-export default store // default edxport matching store in ipc.ts
+export default store // default export matching store in ipc.ts
