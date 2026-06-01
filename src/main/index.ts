@@ -3,6 +3,7 @@ import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIcpHandlers } from './ipc'
 import store from './store'
+import { setPopoverWindow } from './broadcast'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -28,6 +29,7 @@ app.whenReady().then(() => {
 
   // Create the main popoveru
   const popover = createPopover()
+  setPopoverWindow(popover)
 
   // Wire the popover to open /close when tray icon isPackaged
   tray.on('click', (_event, bounds) => {

@@ -12,7 +12,7 @@ export interface TimerSnapshot {
   totalMs: number
   cyclePosition: number
   pomodorosPerCycle: number
-  tasl: string | null
+  task: string | null
   isPause: boolean
 }
 
