@@ -16,14 +16,14 @@ export interface TimerSnapshot {
   isPause: boolean
 }
 
-export interface PomdodoroConfig {
+export interface PomodoroConfig {
   focusMinutes: number // default 25
   shortBreakMinutes: number // default 5
   longBreakMinutes: number // default 15
   pomodorosPerCycle: number // default 4
   discordWebhookUrl: string | null
 }
-export const DEFAULT_CONFIG: PomdodoroConfig = {
+export const DEFAULT_CONFIG: PomodoroConfig = {
   focusMinutes: 25,
   shortBreakMinutes: 5,
   longBreakMinutes: 15,

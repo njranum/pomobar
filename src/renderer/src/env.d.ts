@@ -1,8 +1,3 @@
 /// <reference types="vite/client" />
-//
-interface Window {
-  api: {
-    storeGet: (key: string) => Promise<unknown>
-    storeSet: (key: string, value: unknown) => void
-  }
-}
+
+// `Window.api` and `Window.electron` are declared in src/preload/index.d.ts
