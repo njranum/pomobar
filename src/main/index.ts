@@ -4,7 +4,6 @@ import { createPopover } from './popover'
 import { registerIpcHandlers } from './ipc'
 import { setPopoverWindow, broadcastSnapshot, broadcastStats } from './broadcast'
 import timer from './timer'
-import { is } from '@electron-toolkit/utils'
 import { buildRecord, computeStats, writeSession } from './sessions'
 import type { AppState, TimerSnapshot } from '@/shared/types'
 
@@ -82,21 +81,18 @@ app.whenReady().then(() => {
   })
 
   // Create manual pop up context menu to allow selection of timer states for testing
-  if (is.dev) {
-    const menuTray = tray
-    const devMenu = Menu.buildFromTemplate([
-      { label: 'Start Focus', click: () => timer.startFocus({ id: null, title: 'dev' }) },
-      {
-        label: 'Pause / Resume',
-        click: () => {
-          if (timer.getSnapshot().state === 'paused') timer.resume()
-          else timer.pause()
-        },
+  const menuTray = tray
+  const devMenu = Menu.buildFromTemplate([
+    {
+      label: 'Pause / Resume',
+      click: () => {
+        if (timer.getSnapshot().state === 'paused') timer.resume()
+        else timer.pause()
       },
-      { label: 'Cancel', click: () => timer.cancel() },
-      { label: 'End Early', click: () => timer.endEarly() },
-      { label: 'Complete Now', click: () => timer.completeNow() },
-    ])
-    menuTray.on('right-click', () => menuTray.popUpContextMenu(devMenu))
-  }
+    },
+    { label: 'Cancel', click: () => timer.cancel() },
+    { label: 'End Early', click: () => timer.endEarly() },
+    { label: 'Complete Now (dev only)', click: () => timer.completeNow() }, // testing aid to pretend like the timer hit 0
+  ])
+  menuTray.on('right-click', () => menuTray.popUpContextMenu(devMenu))
 })
