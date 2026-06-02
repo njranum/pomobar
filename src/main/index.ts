@@ -5,6 +5,7 @@ import { registerIpcHandlers } from './ipc'
 import { setPopoverWindow, broadcastSnapshot } from './broadcast'
 import timer from './timer'
 import { is } from '@electron-toolkit/utils'
+import { buildRecord, writeSession } from './sessions'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -34,6 +35,7 @@ app.whenReady().then(() => {
 
   // subscribe to the timer ticks
   timer.onSnapshot(broadcastSnapshot)
+  timer.onSessionEnded((e) => writeSession(buildRecord(e)))
 
   // Wire the popover to open /close when tray icon isPackaged
   tray.on('click', (_event, bounds) => {

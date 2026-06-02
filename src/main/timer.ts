@@ -5,7 +5,8 @@ import type { AppState, SessionType, TaskRef, TimerSnapshot } from '@/shared/typ
 interface ActiveSession {
   type: SessionType
   totalMs: number // capture only once at the start
-  startedAt: number
+  startedAt: number // running segment start (reset on resume)
+  sessionStart: number // wall-clock start time never rewritten
   accumulatedMs: number
   task: string | null // focus = task title, breaks = null
 }
@@ -13,10 +14,11 @@ interface ActiveSession {
 export interface EndedSession {
   type: SessionType
   task: string | null
-  totalMs: number
-  elapsedMs: number
+  startedAt: number
+  endedAt: number
+  durationMs: number
   completed: boolean // true = ran to zero or ended manually, false = cancelled
-  cyclePosition: number
+  cycleNumber: number
 }
 
 class Timer extends EventEmitter {
@@ -38,6 +40,13 @@ class Timer extends EventEmitter {
     if (!this.isOneOf('idle', 'shortBreak', 'longBreak')) {
       return this.reject('startFocus', this.state)
     }
+    // a running break cut short by a focus must be logged
+    if (this.session && this.isOneOf('shortBreak', 'longBreak')) {
+      const wasLong = this.session.type === 'longBreak'
+      this.endSession(true)
+      if (wasLong) this.cyclePosition = 1
+    }
+
     // dev aid: trace focus starts while testing
     console.info(`[timer] startFocus — task="${task.title}" cyclePosition=${this.cyclePosition}`)
     const { focusMinutes } = store.get('config')
@@ -154,7 +163,15 @@ class Timer extends EventEmitter {
   }
 
   private begin(type: SessionType, minutes: number, task: string | null): void {
-    this.session = { type, totalMs: minutes * 60000, startedAt: Date.now(), accumulatedMs: 0, task }
+    const now = Date.now()
+    this.session = {
+      type,
+      totalMs: minutes * 60000,
+      startedAt: now,
+      sessionStart: now,
+      accumulatedMs: 0,
+      task,
+    }
   }
 
   private endSession(completed: boolean): void {
@@ -162,10 +179,11 @@ class Timer extends EventEmitter {
     this.emit('sessionEnded', {
       type: this.session.type,
       task: this.session.task,
-      totalMs: this.session.totalMs,
-      elapsedMs: this.elapsed(),
+      startedAt: this.session.sessionStart,
+      endedAt: Date.now(),
+      durationMs: this.elapsed(),
       completed,
-      cyclePosition: this.cyclePosition,
+      cycleNumber: this.cyclePosition,
     } satisfies EndedSession)
   }
 
