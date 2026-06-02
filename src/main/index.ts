@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, Menu } from 'electron'
+import { app, Tray, nativeImage, Menu, type NativeImage } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIpcHandlers } from './ipc'
@@ -6,6 +6,7 @@ import { setPopoverWindow, broadcastSnapshot, broadcastStats } from './broadcast
 import timer from './timer'
 import { is } from '@electron-toolkit/utils'
 import { buildRecord, computeStats, writeSession } from './sessions'
+import type { AppState, TimerSnapshot } from '@/shared/types'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -18,24 +19,49 @@ app.whenReady().then(() => {
   // test ipc connection
   registerIpcHandlers()
 
-  // Get the tray icon image
-  const iconPath = app.isPackaged
-    ? join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'tray-icon@2x.png')
-    : join(__dirname, '../../resources/tray-icon@2x.png')
-  const trayIcon = nativeImage.createFromPath(iconPath)
-  trayIcon.setTemplateImage(true)
+  // Resolve resources/icons
+  const iconDirs = app.isPackaged
+    ? join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'icons')
+    : join(__dirname, '../../resources/icons')
+  const makeIcon = (state: AppState): NativeImage => {
+    const img = nativeImage.createFromPath(join(iconDirs, `${state}Template.png`))
+    img.setTemplateImage(true)
+    return img
+  }
+  const icons: Record<AppState, NativeImage> = {
+    idle: makeIcon('idle'),
+    focus: makeIcon('focus'),
+    shortBreak: makeIcon('shortBreak'),
+    longBreak: makeIcon('longBreak'),
+    paused: makeIcon('paused'),
+    planning: makeIcon('planning'),
+  }
 
   // Create the tray
-  tray = new Tray(trayIcon)
+  tray = new Tray(icons.idle)
   tray.setToolTip('pomobar')
 
   // Create the main popoveru
   const popover = createPopover()
   setPopoverWindow(popover)
 
+  // calculate the time remaining to show in ocon bar
+  const mmss = (ms: number): string => {
+    const t = Math.round(ms / 1000)
+    return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
+  }
+  // make tray icon state dependent and show time left if applicable
+  const updateTray = (s: TimerSnapshot): void => {
+    tray?.setImage(icons[s.state])
+    const showTime = s.state !== 'idle' && s.state !== 'planning'
+    tray?.setTitle(showTime ? ` ${mmss(s.remainingMs)}` : '')
+  }
+
   // subscribe to the timer ticks
-  timer.onSnapshot(broadcastSnapshot)
+  timer.onSnapshot(updateTray)
+  updateTray(timer.getSnapshot()) // paint idle now
   // subscribe to the state change events
+  timer.onSnapshot(broadcastSnapshot)
   timer.onSessionEnded((e) => {
     writeSession(buildRecord(e))
     broadcastStats(computeStats())
