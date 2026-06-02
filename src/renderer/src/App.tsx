@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTimer } from './hooks/useTimer'
 
 export default function App(): React.JSX.Element {
-  const { snap, startFocus, pause, resume, cancel } = useTimer() // live timer state
+  const { snap, startFocus, pause, resume, cancel, endEarly } = useTimer() // live timer state
   const [task, setTask] = useState('') // what we type into the box
 
   // allow start if task is non-empty and we are in idle / break states
@@ -46,6 +46,12 @@ export default function App(): React.JSX.Element {
             className="flex-1 rounded bg-red-600 px-3 py-1 text-white"
           >
             Cancel
+          </button>
+          <button
+            onClick={() => endEarly()}
+            className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
+          >
+            End early + complete
           </button>
         </div>
       )}
