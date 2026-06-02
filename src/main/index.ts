@@ -2,10 +2,10 @@ import { app, Tray, nativeImage, Menu } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIpcHandlers } from './ipc'
-import { setPopoverWindow, broadcastSnapshot } from './broadcast'
+import { setPopoverWindow, broadcastSnapshot, broadcastStats } from './broadcast'
 import timer from './timer'
 import { is } from '@electron-toolkit/utils'
-import { buildRecord, writeSession } from './sessions'
+import { buildRecord, computeStats, writeSession } from './sessions'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -35,8 +35,11 @@ app.whenReady().then(() => {
 
   // subscribe to the timer ticks
   timer.onSnapshot(broadcastSnapshot)
-  timer.onSessionEnded((e) => writeSession(buildRecord(e)))
-
+  // subscribe to the state change events
+  timer.onSessionEnded((e) => {
+    writeSession(buildRecord(e))
+    broadcastStats(computeStats())
+  })
   // Wire the popover to open /close when tray icon isPackaged
   tray.on('click', (_event, bounds) => {
     if (popover.isVisible()) {

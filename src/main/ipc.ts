@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import { IpcChannels } from '../shared/ipc-channels'
 import store from './store'
 import timer from './timer'
+import { computeStats } from './sessions'
 
 export function registerIpcHandlers(): void {
   // Register the electron-store getter and setters
@@ -21,4 +22,5 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.TimerCancel, () => timer.cancel())
   ipcMain.handle(IpcChannels.TimerEndEarly, () => timer.endEarly())
   //
+  ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
 }
