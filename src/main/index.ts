@@ -2,7 +2,12 @@ import { app, Tray, nativeImage, Menu, type NativeImage } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIpcHandlers } from './ipc'
-import { setPopoverWindow, broadcastSnapshot, broadcastStats } from './broadcast'
+import {
+  setPopoverWindow,
+  broadcastSnapshot,
+  broadcastStats,
+  broadcastPromptMarkComplete,
+} from './broadcast'
 import timer from './timer'
 import { buildRecord, computeStats, writeSession } from './sessions'
 import type { AppState, TimerSnapshot } from '@/shared/types'
@@ -65,6 +70,11 @@ app.whenReady().then(() => {
     writeSession(buildRecord(e))
     broadcastStats(computeStats())
   })
+  // Subscribe to task complete
+  timer.onNaturalComplete(({ type, task }) => {
+    if (type === 'focus' && task) broadcastPromptMarkComplete(task)
+  })
+
   // Wire the popover to open /close when tray icon isPackaged
   tray.on('click', (_event, bounds) => {
     if (popover.isVisible()) {

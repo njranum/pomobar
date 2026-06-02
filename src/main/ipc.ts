@@ -23,4 +23,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.TimerEndEarly, () => timer.endEarly())
   //
   ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
+  //
+  ipcMain.handle(IpcChannels.TimerResolveComplete, () => {
+    // TODO (M2): read markComplete and write Status = Done to the Focus Tasks DB item
+  })
 }

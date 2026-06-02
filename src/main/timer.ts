@@ -120,7 +120,7 @@ class Timer extends EventEmitter {
   onSessionEnded(listener: (e: EndedSession) => void): this {
     return this.on('sessionEnded', listener)
   }
-  onNaturalComplete(listener: (info: { type: SessionType }) => void): this {
+  onNaturalComplete(listener: (info: { type: SessionType; task: string | null }) => void): this {
     return this.on('naturalComplete', listener)
   }
 
@@ -132,7 +132,7 @@ class Timer extends EventEmitter {
 
   private onSessionComplete(): void {
     if (!this.session) return
-    this.emit('naturalComplete', { type: this.session.type })
+    this.emit('naturalComplete', { type: this.session.type, task: this.session.task })
     if (this.session.type === 'focus') this.completeFocus()
     else this.completeBreak()
   }

@@ -14,3 +14,7 @@ export const broadcastSnapshot = (s: TimerSnapshot): void => {
 export const broadcastStats = (s: DayStats): void => {
   popover?.webContents.send(IpcChannels.StatsUpdated, s)
 }
+
+export const broadcastPromptMarkComplete = (task: string): void => {
+  popover?.webContents.send(IpcChannels.PromptMarkComplete, { task })
+}
