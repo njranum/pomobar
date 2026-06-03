@@ -82,6 +82,13 @@ export default function App(): React.JSX.Element {
                 ))}
               </ul>
             )}
+            <button
+              disabled={errors.length > 0}
+              onClick={() => window.api.setConfig(cfg)}
+              className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Save
+            </button>
           </div>
         )}
       </div>
