@@ -75,6 +75,14 @@ export default function App(): React.JSX.Element {
                 className="w-20 rounded border px-2 py-1"
               />
             </label>
+            <label className="flex items-center justify-between gap-2">Discord webhook</label>
+            <input
+              type="password"
+              value={cfg.discordWebhookUrl ?? ''}
+              onChange={(e) => setCfg({ ...cfg, discordWebhookUrl: e.target.value })}
+              placeholder="https://discord.com/api/webhooks/..."
+              className="2-40 rounded border px-2 py-1"
+            />
             {errors.length > 0 && (
               <ul className="text-sm text-red-600">
                 {errors.map((e) => (
@@ -84,7 +92,14 @@ export default function App(): React.JSX.Element {
             )}
             <button
               disabled={errors.length > 0}
-              onClick={() => window.api.setConfig(cfg)}
+              onClick={() =>
+                window.api.setConfig({
+                  ...cfg,
+                  discordWebhookUrl: cfg.discordWebhookUrl?.trim()
+                    ? cfg.discordWebhookUrl.trim()
+                    : null,
+                })
+              }
               className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
