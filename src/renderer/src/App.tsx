@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTimer } from './hooks/useTimer'
 import { useStats } from './hooks/useStats'
+import { validateConfig } from '@/shared/validateConfig'
+import type { PomodoroConfig } from '@/shared/types'
 
 const fmtFocus = (ms: number): string => {
   const m = Math.round(ms / 60000)
@@ -9,8 +11,15 @@ const fmtFocus = (ms: number): string => {
 
 export default function App(): React.JSX.Element {
   const { snap, startFocus, pause, resume, cancel, endEarly, prompt, resolvePrompt } = useTimer() // live timer state
+
   const [task, setTask] = useState('') // what we type into the box
   const [view, setView] = useState<'main' | 'config'>('main')
+  const [cfg, setCfg] = useState<PomodoroConfig | null>(null)
+
+  useEffect(() => {
+    window.api.getConfig().then(setCfg)
+  }, [])
+
   // allow start if task is non-empty and we are in idle / break states
   const canStart =
     task.trim().length > 0 &&
@@ -21,12 +30,60 @@ export default function App(): React.JSX.Element {
   const stats = useStats()
   // config view
   if (view === 'config') {
+    const errors = cfg ? validateConfig(cfg) : []
     return (
       <div className="flex flex-col gap-3 p-4">
         <button onClick={() => setView('main')} className="self-start text-sm text-blue-600">
           ← Back
         </button>
         <h2 className="text-lg font-semibold">Settings</h2>
+        {cfg && (
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center justify-between gap-2">
+              Focus (min)
+              <input
+                type="number"
+                value={cfg.focusMinutes}
+                onChange={(e) => setCfg({ ...cfg, focusMinutes: Number(e.target.value) })}
+                className="w-20 rounded border px-2 py-1"
+              />
+            </label>
+            <label className="flex items-center justify-between gap-2">
+              Short break (min)
+              <input
+                type="number"
+                value={cfg.shortBreakMinutes}
+                onChange={(e) => setCfg({ ...cfg, shortBreakMinutes: Number(e.target.value) })}
+                className="w-20 rounded border px-2 py-1"
+              />
+            </label>
+            <label className="flex items-center justify-between gap-2">
+              Long break (min)
+              <input
+                type="number"
+                value={cfg.longBreakMinutes}
+                onChange={(e) => setCfg({ ...cfg, longBreakMinutes: Number(e.target.value) })}
+                className="w-20 rounded border px-2 py-1"
+              />
+            </label>
+            <label className="flex items-center justify-between gap-2">
+              Pomodoros per cycle
+              <input
+                type="number"
+                value={cfg.pomodorosPerCycle}
+                onChange={(e) => setCfg({ ...cfg, pomodorosPerCycle: Number(e.target.value) })}
+                className="w-20 rounded border px-2 py-1"
+              />
+            </label>
+            {errors.length > 0 && (
+              <ul className="text-sm text-red-600">
+                {errors.map((e) => (
+                  <li key={e}>{e}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
     )
   }
