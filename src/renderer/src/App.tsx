@@ -10,7 +10,7 @@ const fmtFocus = (ms: number): string => {
 export default function App(): React.JSX.Element {
   const { snap, startFocus, pause, resume, cancel, endEarly, prompt, resolvePrompt } = useTimer() // live timer state
   const [task, setTask] = useState('') // what we type into the box
-
+  const [view, setView] = useState<'main' | 'config'>('main')
   // allow start if task is non-empty and we are in idle / break states
   const canStart =
     task.trim().length > 0 &&
@@ -19,13 +19,29 @@ export default function App(): React.JSX.Element {
   const isActive = snap?.state === 'focus' || snap?.state === 'paused'
 
   const stats = useStats()
-
+  // config view
+  if (view === 'config') {
+    return (
+      <div className="flex flex-col gap-3 p-4">
+        <button onClick={() => setView('main')} className="self-start text-sm text-blue-600">
+          ← Back
+        </button>
+        <h2 className="text-lg font-semibold">Settings</h2>
+      </div>
+    )
+  }
+  // main view
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div className="border-b border-gray-200 pb-2 text-sm text-gray-600">
-        {stats
-          ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}`
-          : '- pomodoros | -'}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm text-gray-600">
+        <span>
+          {stats
+            ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}`
+            : '- pomodoros | -'}
+        </span>
+        <button onClick={() => setView('config')} title="Settings" aria-label="Settings">
+          ⚙
+        </button>
       </div>
       {/* Task entry + start */}
       <div className="flex flex-col gap-2">
