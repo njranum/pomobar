@@ -8,7 +8,9 @@ export const setPopoverWindow = (w: BrowserWindow): void => {
 }
 
 export const broadcastSnapshot = (s: TimerSnapshot): void => {
-  popover?.webContents.send(IpcChannels.TimerSnapshot, s)
+  if (popover && !popover.isDestroyed()) {
+    popover?.webContents.send(IpcChannels.TimerSnapshot, s)
+  }
 }
 
 export const broadcastStats = (s: DayStats): void => {
