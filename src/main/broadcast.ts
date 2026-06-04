@@ -18,3 +18,8 @@ export const broadcastStats = (s: DayStats): void => {
 export const broadcastPromptMarkComplete = (task: string): void => {
   popover?.webContents.send(IpcChannels.PromptMarkComplete, { task })
 }
+
+export const showPopover = (): void => {
+  popover?.show()
+  popover?.focus()
+}
