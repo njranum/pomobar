@@ -9,6 +9,7 @@ interface ActiveSession {
   sessionStart: number // wall-clock start time never rewritten
   accumulatedMs: number
   task: string | null // focus = task title, breaks = null
+  warned: boolean // fires at 20% time left
 }
 
 export interface EndedSession {
@@ -48,7 +49,7 @@ class Timer extends EventEmitter {
     }
 
     // dev aid: trace focus starts while testing
-    console.info(`[timer] startFocus — task="${task.title}" cyclePosition=${this.cyclePosition}`)
+    // console.info(`[timer] startFocus — task="${task.title}" cyclePosition=${this.cyclePosition}`)
     const { focusMinutes } = store.get('config')
     this.begin('focus', focusMinutes, task.title)
     this.state = 'focus'
@@ -123,11 +124,24 @@ class Timer extends EventEmitter {
   onNaturalComplete(listener: (info: { type: SessionType; task: string | null }) => void): this {
     return this.on('naturalComplete', listener)
   }
+  onNearComplete(listener: (info: { type: SessionType; remainingMs: number }) => void): this {
+    return this.on('nearComplete', listener)
+  }
 
   private tick(): void {
     if (!this.session || this.state === 'paused') return
-    if (this.elapsed() >= this.session.totalMs) this.onSessionComplete()
-    else this.emitSnapshot()
+    if (this.elapsed() >= this.session.totalMs) {
+      this.onSessionComplete()
+      return
+    }
+    if (!this.session.warned && this.elapsed() >= this.session.totalMs * 0.8) {
+      this.session.warned = true
+      this.emit('nearComplete', {
+        type: this.session.type,
+        remainingMs: this.session.totalMs - this.elapsed(),
+      })
+    }
+    this.emitSnapshot()
   }
 
   private onSessionComplete(): void {
@@ -171,6 +185,7 @@ class Timer extends EventEmitter {
       sessionStart: now,
       accumulatedMs: 0,
       task,
+      warned: false,
     }
   }
 

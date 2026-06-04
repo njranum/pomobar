@@ -11,6 +11,7 @@ import {
 import timer from './timer'
 import { buildRecord, computeStats, writeSession } from './sessions'
 import type { AppState, TimerSnapshot } from '@/shared/types'
+import { registerNotifications } from './notification'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -22,6 +23,7 @@ let tray: Tray | null = null
 app.whenReady().then(() => {
   // test ipc connection
   registerIpcHandlers()
+  registerNotifications()
 
   // Resolve resources/icons
   const iconDirs = app.isPackaged
