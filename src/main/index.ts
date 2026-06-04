@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, Menu, type NativeImage } from 'electron'
+import { app, Tray, nativeImage, Menu, type NativeImage, dialog } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIpcHandlers } from './ipc'
@@ -22,11 +22,30 @@ if (process.platform === 'darwin') {
 }
 
 let tray: Tray | null = null
+let quitConfirmed = false
 
 if (!app.requestSingleInstanceLock()) {
   app.quit() // another instance already holds the lock
 } else {
-  app.on('before-quit', () => timer.persistNow()) // persist the session for recovery
+  app.on('before-quit', (e) => {
+    if (timer.isSessionActive() && !quitConfirmed) {
+      e.preventDefault()
+      const choice = dialog.showMessageBoxSync({
+        type: 'warning',
+        buttons: ['Quit', 'Cancel'],
+        defaultId: 1,
+        cancelId: 1,
+        message: 'A session is active',
+        detail: 'Quitting will mark the current session as incomplete',
+      })
+      if (choice === 0) {
+        quitConfirmed = true
+        app.quit()
+      }
+      return
+    }
+    timer.persistNow()
+  }) // persist the session for recovery
   app.on('second-instance', () => showPopover()) // focus the existing app's popover
   //
   // revocer persisted session on startup
@@ -137,6 +156,7 @@ if (!app.requestSingleInstanceLock()) {
       { label: 'Cancel', click: () => timer.cancel() },
       { label: 'End Early', click: () => timer.endEarly() },
       { label: 'Complete Now (dev only)', click: () => timer.completeNow() }, // testing aid to pretend like the timer hit 0
+      { label: 'Quit', click: () => app.quit() },
     ])
     menuTray.on('right-click', () => menuTray.popUpContextMenu(devMenu))
   })

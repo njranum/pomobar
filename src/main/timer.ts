@@ -133,6 +133,10 @@ class Timer extends EventEmitter {
     return this.on('nearComplete', listener)
   }
 
+  isSessionActive(): boolean {
+    return this.session !== null
+  }
+
   private tick(): void {
     if (!this.session || this.state === 'paused') return
     if (this.elapsed() >= this.session.totalMs) {
