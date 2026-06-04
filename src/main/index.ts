@@ -12,6 +12,7 @@ import timer from './timer'
 import { buildRecord, computeStats, writeSession } from './sessions'
 import type { AppState, TimerSnapshot } from '@/shared/types'
 import { registerNotifications } from './notification'
+import { registerDiscord } from './discord'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -24,6 +25,7 @@ app.whenReady().then(() => {
   // test ipc connection
   registerIpcHandlers()
   registerNotifications()
+  registerDiscord()
 
   // Resolve resources/icons
   const iconDirs = app.isPackaged
