@@ -32,6 +32,11 @@ if (!app.requestSingleInstanceLock()) {
     registerNotifications()
     registerDiscord()
 
+    // Register as mac login item
+    if (app.isPackaged) {
+      app.setLoginItemSettings({ openAtLogin: true })
+    }
+
     // Resolve resources/icons
     const iconDirs = app.isPackaged
       ? join(process.resourcesPath, 'app.asar.unpacked', 'resources', 'icons')
