@@ -14,6 +14,7 @@ import { buildRecord, computeStats, writeSession } from './sessions'
 import type { AppState, TimerSnapshot } from '@/shared/types'
 import { registerNotifications } from './notification'
 import { registerDiscord } from './discord'
+import store from './store'
 
 if (process.platform === 'darwin') {
   app.dock?.hide()
@@ -25,7 +26,26 @@ let tray: Tray | null = null
 if (!app.requestSingleInstanceLock()) {
   app.quit() // another instance already holds the lock
 } else {
+  app.on('before-quit', () => timer.persistNow()) // persist the session for recovery
   app.on('second-instance', () => showPopover()) // focus the existing app's popover
+  //
+  // revocer persisted session on startup
+  const ls = store.get('lastState')
+  if (ls && ls.state !== 'idle' && ls.sessionType && ls.startTime) {
+    writeSession(
+      buildRecord({
+        type: ls.sessionType,
+        startedAt: new Date(ls.startTime).getTime(),
+        endedAt: ls.lastTickAt ? new Date(ls.lastTickAt).getTime() : Date.now(),
+        durationMs: ls.accumulatedMs,
+        cycleNumber: ls.cyclePosition,
+        completed: false,
+        task: ls.task,
+      })
+    )
+    store.set('lastState', null)
+  }
+  //
   app.whenReady().then(() => {
     // test ipc connection
     registerIpcHandlers()

@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from '@/shared/types'
 import type { PomodoroConfig, SessionRecord } from '@/shared/types'
 // Create a skeleton schema
 
-interface PersistedState {
+export interface PersistedState {
   state: 'idle' | 'focus' | 'shortBreak' | 'longBreak' | 'paused' | 'planning'
   sessionType: SessionRecord['type'] | null
   startTime: string | null

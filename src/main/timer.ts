@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events'
 import store from './store'
 import type { AppState, SessionType, TaskRef, TimerSnapshot } from '@/shared/types'
+import type { PersistedState } from './store'
 
 interface ActiveSession {
   type: SessionType
@@ -54,6 +55,7 @@ class Timer extends EventEmitter {
     this.begin('focus', focusMinutes, task.title)
     this.state = 'focus'
     this.emitSnapshot()
+    this.persist()
   }
 
   pause(): void {
@@ -63,6 +65,7 @@ class Timer extends EventEmitter {
     this.session.accumulatedMs += Date.now() - this.session.startedAt
     this.state = 'paused'
     this.emitSnapshot()
+    this.persist()
   }
 
   resume(): void {
@@ -72,6 +75,7 @@ class Timer extends EventEmitter {
     this.session.startedAt = Date.now()
     this.state = 'focus'
     this.emitSnapshot()
+    this.persist()
   }
 
   cancel(): void {
@@ -84,6 +88,7 @@ class Timer extends EventEmitter {
     this.state = 'idle'
     this.session = null
     this.emitSnapshot()
+    this.persist()
   }
 
   endEarly(): void {
@@ -164,6 +169,7 @@ class Timer extends EventEmitter {
       this.state = 'longBreak'
     }
     this.emitSnapshot()
+    this.persist()
   }
 
   private completeBreak(): void {
@@ -174,6 +180,7 @@ class Timer extends EventEmitter {
     this.state = 'idle'
     this.session = null
     this.emitSnapshot()
+    this.persist()
   }
 
   private begin(type: SessionType, minutes: number, task: string | null): void {
@@ -218,6 +225,27 @@ class Timer extends EventEmitter {
 
   private reject(method: string, from: AppState): void {
     console.warn(`[timer] ${method} is illegal from state "${from}" - ignored`)
+  }
+
+  private toPersisted(): PersistedState | null {
+    if (!this.session || this.state === 'idle') return null
+    return {
+      state: this.state,
+      sessionType: this.session.type,
+      startTime: new Date(this.session.sessionStart).toISOString(),
+      accumulatedMs: this.elapsed(),
+      lastTickAt: new Date().toISOString(),
+      cyclePosition: this.cyclePosition,
+      task: this.session.task,
+    }
+  }
+
+  private persist(): void {
+    store.set('lastState', this.toPersisted())
+  }
+
+  persistNow(): void {
+    this.persist()
   }
 }
 export const timer = new Timer()
