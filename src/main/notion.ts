@@ -13,3 +13,16 @@ export function getNotion(): Client | null {
 export function resetNotion(): void {
   client = null
 }
+
+export async function validateNotionSecret(
+  secret: string,
+  tasksDbId: string
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const c = new Client({ auth: secret })
+    await c.databases.retrieve({ database_id: tasksDbId })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: (e as Error).message }
+  }
+}
