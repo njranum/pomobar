@@ -1,6 +1,6 @@
 import Store from 'electron-store'
 import { DEFAULT_CONFIG } from '@/shared/types'
-import type { PomodoroConfig, SessionRecord } from '@/shared/types'
+import type { PomodoroConfig, SessionRecord, TaskRef } from '@/shared/types'
 // Create a skeleton schema
 
 export interface PersistedState {
@@ -13,14 +13,30 @@ export interface PersistedState {
   task: string | null
 }
 
+export interface NotionTargets {
+  tasksDbId: string | null
+  sessionsDbId: string | null
+}
+
 export interface StoreSchema {
   config: PomodoroConfig
   sessions: SessionRecord[]
   syncQueue: string[]
   lastState: PersistedState | null
+  notionSecret: string | null
+  notionTargets: NotionTargets
+  taskCache: TaskRef[]
 }
 
 const store = new Store<StoreSchema>({
-  defaults: { config: DEFAULT_CONFIG, sessions: [], syncQueue: [], lastState: null },
+  defaults: {
+    config: DEFAULT_CONFIG,
+    sessions: [],
+    syncQueue: [],
+    lastState: null,
+    notionSecret: null,
+    notionTargets: { tasksDbId: null, sessionsDbId: null },
+    taskCache: [],
+  },
 })
 export default store // default export matching store in ipc.ts
