@@ -22,6 +22,10 @@ const api = {
   getConfig: (): Promise<PomodoroConfig> => ipcRenderer.invoke(IpcChannels.ConfigGet),
   setConfig: (patch: Partial<PomodoroConfig>): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.ConfigSet, patch),
+  notionValidate: (secret: string, tasksDbId: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(IpcChannels.NotionValidate, { secret, tasksDbId }),
+  notionSetup: (p: { secret: string; tasksDbId: string; sessionsDbId: string }): Promise<void> =>
+    ipcRenderer.invoke(IpcChannels.NotionSetup, p),
   // events: main -> renderer (each returns an unsubscribe fn)
   onSnapshot: (cb: (s: TimerSnapshot) => void): (() => void) => {
     const h = (_: unknown, s: TimerSnapshot): void => cb(s)

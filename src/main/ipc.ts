@@ -5,6 +5,7 @@ import timer from './timer'
 import { computeStats } from './sessions'
 import type { PomodoroConfig } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
+import { validateNotionSecret, resetNotion } from './notion'
 
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
@@ -39,4 +40,18 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.TimerResolveComplete, () => {
     // TODO (M2): read markComplete and write Status = Done to the Focus Tasks DB item
   })
+  // Notion
+  ipcMain.handle(
+    IpcChannels.NotionValidate,
+    (_e, { secret, tasksDbId }: { secret: string; tasksDbId: string }) =>
+      validateNotionSecret(secret, tasksDbId)
+  )
+  ipcMain.handle(
+    IpcChannels.NotionSetup,
+    (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
+      store.set('notionSecret', p.secret)
+      store.set('notionTargets', { tasksDbId: p.tasksDbId, sessionsDbId: p.sessionsDbId })
+      resetNotion()
+    }
+  )
 }
