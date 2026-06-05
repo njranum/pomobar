@@ -23,6 +23,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@notionhq/client": "^5.22.0",
     "electron-store": "^8.2.0",
     "fswatch": "^0.1.4"
   },

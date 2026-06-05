@@ -7,11 +7,13 @@ import type { PomodoroConfig } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
 
 export function registerIpcHandlers(): void {
-  // Register the electron-store getter and setters
+  const PROTECTED = new Set(['notionSecret', 'notionTargets'])
   ipcMain.handle(IpcChannels.StoreGet, (_event, key: string) => {
+    if (PROTECTED.has(key)) return undefined
     return store.get(key)
   })
   ipcMain.handle(IpcChannels.StoreSet, (_event, key: string, value: unknown) => {
+    if (PROTECTED.has(key)) return
     return store.set(key, value)
   })
   // Timer Controls
