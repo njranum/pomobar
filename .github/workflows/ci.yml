@@ -1,0 +1,53 @@
+name: Pre-Merge Validation
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'resources/**/*.png'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'resources/**/*.png'
+
+# Automatically cancel older running instances of this workflow on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Make read only to apply Least-privledges principal
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    # use ubuntu-latest to save the $
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm' # Cache node modules to save compute
+
+      - name: Install dependencies (Clean Install)
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Check TypeScript Types
+        run: npm run typecheck

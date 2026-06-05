@@ -1,0 +1,25 @@
+name: Pre-Merge Validation
+
+# Runs ONLY on doc-only / non-code PRs (the inverse of ci.yml's paths-ignore).
+# It immediately succeeds so a required "validate" status check is always satisfied,
+# even when the real pipeline is correctly skipped.
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'resources/**/*.png'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Skip validation
+        run: echo "No code changes detected — pre-merge validation not required."
