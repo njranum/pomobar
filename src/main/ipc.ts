@@ -11,6 +11,7 @@ import {
   resetNotion,
   resolveDataSourceId,
   fetchScheduledTasks,
+  markTaskDone,
 } from './notion'
 
 export let activeFocusTask: TaskRef | null = null
@@ -49,9 +50,14 @@ export function registerIpcHandlers(): void {
     return { ok: true }
   })
   //
-  ipcMain.handle(IpcChannels.TimerResolveComplete, () => {
-    // TODO (M2): read markComplete and write Status = Done to the Focus Tasks DB item
-  })
+  ipcMain.handle(
+    IpcChannels.TimerResolveComplete,
+    (_e, { markComplete }: { markComplete: boolean }) => {
+      const task = activeFocusTask
+      activeFocusTask = null
+      if (markComplete && task?.id) markTaskDone(task.id)
+    }
+  )
   // Notion
   ipcMain.handle(IpcChannels.NotionIsConfigured, () => {
     const targets = store.get('notionTargets')

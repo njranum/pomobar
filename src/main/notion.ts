@@ -1,5 +1,6 @@
 import { Client } from '@notionhq/client'
 import type { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints/databases'
+import type { UpdatePageParameters } from '@notionhq/client/build/src/api-endpoints/pages'
 import store from './store'
 import type { PickerTask } from '@/shared/types'
 
@@ -70,6 +71,18 @@ export async function fetchScheduledTasks(): Promise<PickerTask[]> {
         overdue: scheduledDate !== null && scheduledDate < today,
       },
     ]
+  })
+}
+
+export function markTaskDone(taskId: string): void {
+  const c = getNotion()
+  if (!c) return
+  const props: UpdatePageParameters['properties'] = {
+    Status: { select: { name: 'Done' } },
+    'Completed Date': { date: { start: new Date().toISOString().slice(0, 10) } },
+  }
+  c.pages.update({ page_id: taskId, properties: props }).catch(() => {
+    /* best-effort */
   })
 }
 
