@@ -1,6 +1,8 @@
 import type { SessionRecord, SessionType, DayStats } from '@/shared/types'
+import type { CreatePageParameters } from '@notionhq/client'
 import { randomUUID } from 'crypto'
 import store from './store'
+import { getNotion } from './notion'
 
 const fmt = (d: Date): string => {
   return d.toLocaleString('en-GB', {
@@ -41,22 +43,70 @@ export function buildRecord(p: {
   }
 }
 
+export function sessionToNotionProps(r: SessionRecord): Record<string, unknown> {
+  const typeLabel =
+    r.type === 'focus' ? 'Focus' : r.type === 'shortBreak' ? 'Short Break' : 'Long Break'
+  const props: Record<string, unknown> = {
+    Name: { title: [{ text: { content: r.name } }] },
+    Date: { date: { start: r.date } },
+    'Start Time': { date: { start: r.startTime } },
+    'End Time': { date: { start: r.endTime } },
+    'Duration (mins)': { number: Math.round(r.durationMs / 60000) },
+    Type: { select: { name: typeLabel } },
+    'Cycle Number': { number: r.cycleNumber },
+    Completed: { checkbox: r.completed },
+  }
+  if (r.taskId) props['Task'] = { relation: [{ id: r.taskId }] }
+  return props
+}
+
 export function writeSession(rec: SessionRecord): SessionRecord {
   store.set('sessions', [...store.get('sessions'), rec])
   store.set('syncQueue', [...store.get('syncQueue'), rec.id])
   return rec
 }
 
-export async function processSyncQueue(): Promise<void> {
-  const queue = store.get('syncQueue')
-  if (queue.length === 0) return
-  console.info(`[sync] ${queue.length} record(s) pending_sync - Notion wiring TODO`)
-  // TODO for each id, attempt a Notion write
-  // Succuess -> set syncStatus='synced', set notionPageId, remove id from SyncQueue
-  // Failure -> leave in place
+function dropFromQueue(id: string): void {
+  store.set(
+    'syncQueue',
+    store.get('syncQueue').filter((q) => q !== id)
+  )
 }
 
-// TODO - set interval to process syncqueue until empty and call on app.whenReady()
+function markSynced(id: string, notionPageId: string): void {
+  store.set(
+    'sessions',
+    store
+      .get('sessions')
+      .map((s) => (s.id === id ? { ...s, syncStatus: 'synced' as const, notionPageId } : s))
+  )
+}
+
+export async function processSyncQueue(): Promise<void> {
+  const c = getNotion()
+  if (!c) return
+  const queue = store.get('syncQueue')
+  if (queue.length === 0) return
+  const dbId = store.get('notionTargets').sessionsDbId
+  if (!dbId) return
+  for (const id of queue) {
+    const rec = store.get('sessions').find((s) => s.id === id)
+    if (!rec) {
+      dropFromQueue(id)
+      continue
+    }
+    try {
+      const page = await c.pages.create({
+        parent: { database_id: dbId },
+        properties: sessionToNotionProps(rec) as NonNullable<CreatePageParameters['properties']>,
+      })
+      markSynced(rec.id, page.id)
+      dropFromQueue(id)
+    } catch {
+      // leave in queue for retry
+    }
+  }
+}
 
 export function computeStats(): DayStats {
   const today = new Date().toISOString().slice(0, 10)
