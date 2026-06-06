@@ -13,6 +13,9 @@ export const IpcChannels = {
   StatsGet: 'stats:get',
   ConfigGet: 'config:get',
   ConfigSet: 'config:set', // Partial<PomodoroConfig>
+  NotionIsConfigured: 'notion:isConfigured', // → boolean
+  NotionValidate: 'notion:validate', // { secret, tasksDbId } → { ok, error? }
+  NotionSetup: 'notion:setup', // { secret, tasksDbId, sessionsDbId }
   // events: main -> renderer (push)
   TimerSnapshot: 'timer:snapshot', // TimerSnapshot
   StatsUpdated: 'stats:updated', // DayStats
