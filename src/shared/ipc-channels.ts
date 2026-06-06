@@ -18,6 +18,7 @@ export const IpcChannels = {
   NotionSetup: 'notion:setup', // { secret, tasksDbId, sessionsDbId }
   TasksFetch: 'tasks:fetch', // → PickerTask[] (fetches fresh + writes cache)
   TaskCacheGet: 'tasks:cacheGet', // → PickerTask[] (returns cache instantly)
+  SyncPendingGet: 'sync:pendingGet', // → number (syncQueue.length)
   // events: main -> renderer (push)
   TimerSnapshot: 'timer:snapshot', // TimerSnapshot
   StatsUpdated: 'stats:updated', // DayStats

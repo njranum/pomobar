@@ -66,6 +66,7 @@ export function registerIpcHandlers(): void {
     }
   })
   ipcMain.handle(IpcChannels.TaskCacheGet, () => store.get('taskCache'))
+  ipcMain.handle(IpcChannels.SyncPendingGet, () => store.get('syncQueue').length)
   ipcMain.handle(
     IpcChannels.NotionSetup,
     async (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
@@ -73,12 +74,9 @@ export function registerIpcHandlers(): void {
       const c = new Client({ auth: p.secret })
       const tasksPageId = extractNotionId(p.tasksDbId)
       const sessionsPageId = extractNotionId(p.sessionsDbId)
-      const [tasksDbId, sessionsDbId] = await Promise.all([
-        resolveDataSourceId(c, tasksPageId),
-        resolveDataSourceId(c, sessionsPageId),
-      ])
+      const tasksDbId = await resolveDataSourceId(c, tasksPageId)
       store.set('notionSecret', p.secret)
-      store.set('notionTargets', { tasksDbId, sessionsDbId })
+      store.set('notionTargets', { tasksDbId, sessionsDbId: sessionsPageId })
       resetNotion()
     }
   )
