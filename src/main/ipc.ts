@@ -5,7 +5,13 @@ import timer from './timer'
 import { computeStats } from './sessions'
 import type { PomodoroConfig, TaskRef } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
-import { validateNotionSecret, extractNotionId, resetNotion } from './notion'
+import {
+  validateNotionSecret,
+  extractNotionId,
+  resetNotion,
+  resolveDataSourceId,
+  fetchScheduledTasks,
+} from './notion'
 
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
@@ -50,14 +56,20 @@ export function registerIpcHandlers(): void {
     (_e, { secret, tasksDbId }: { secret: string; tasksDbId: string }) =>
       validateNotionSecret(secret, extractNotionId(tasksDbId))
   )
+  ipcMain.handle(IpcChannels.TasksFetch, () => fetchScheduledTasks())
   ipcMain.handle(
     IpcChannels.NotionSetup,
-    (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
+    async (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
+      const { Client } = await import('@notionhq/client')
+      const c = new Client({ auth: p.secret })
+      const tasksPageId = extractNotionId(p.tasksDbId)
+      const sessionsPageId = extractNotionId(p.sessionsDbId)
+      const [tasksDbId, sessionsDbId] = await Promise.all([
+        resolveDataSourceId(c, tasksPageId),
+        resolveDataSourceId(c, sessionsPageId),
+      ])
       store.set('notionSecret', p.secret)
-      store.set('notionTargets', {
-        tasksDbId: extractNotionId(p.tasksDbId),
-        sessionsDbId: extractNotionId(p.sessionsDbId),
-      })
+      store.set('notionTargets', { tasksDbId, sessionsDbId })
       resetNotion()
     }
   )

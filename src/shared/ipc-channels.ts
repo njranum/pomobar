@@ -16,6 +16,7 @@ export const IpcChannels = {
   NotionIsConfigured: 'notion:isConfigured', // → boolean
   NotionValidate: 'notion:validate', // { secret, tasksDbId } → { ok, error? }
   NotionSetup: 'notion:setup', // { secret, tasksDbId, sessionsDbId }
+  TasksFetch: 'tasks:fetch', // → PickerTask[]
   // events: main -> renderer (push)
   TimerSnapshot: 'timer:snapshot', // TimerSnapshot
   StatsUpdated: 'stats:updated', // DayStats
