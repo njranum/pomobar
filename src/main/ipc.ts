@@ -66,6 +66,7 @@ export function registerIpcHandlers(): void {
     }
   })
   ipcMain.handle(IpcChannels.TaskCacheGet, () => store.get('taskCache'))
+  ipcMain.handle(IpcChannels.SyncPendingGet, () => store.get('syncQueue').length)
   ipcMain.handle(
     IpcChannels.NotionSetup,
     async (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
