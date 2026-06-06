@@ -11,7 +11,10 @@ import {
   resetNotion,
   resolveDataSourceId,
   fetchScheduledTasks,
+  markTaskDone,
 } from './notion'
+
+export let activeFocusTask: TaskRef | null = null
 
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
@@ -26,12 +29,21 @@ export function registerIpcHandlers(): void {
   // Timer Controls
   ipcMain.handle(IpcChannels.TimerGetSnapshot, () => timer.getSnapshot())
   ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: TaskRef }) => {
+    activeFocusTask = task
     timer.startFocus(task)
   })
   ipcMain.handle(IpcChannels.TimerPause, () => timer.pause())
   ipcMain.handle(IpcChannels.TimerResume, () => timer.resume())
-  ipcMain.handle(IpcChannels.TimerCancel, () => timer.cancel())
-  ipcMain.handle(IpcChannels.TimerEndEarly, () => timer.endEarly())
+  ipcMain.handle(IpcChannels.TimerCancel, () => {
+    activeFocusTask = null
+    timer.cancel()
+  })
+  ipcMain.handle(IpcChannels.TimerEndEarly, () => {
+    const task = activeFocusTask
+    activeFocusTask = null
+    timer.endEarly()
+    if (task?.id) markTaskDone(task.id)
+  })
   // Stats
   ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
   // Config
@@ -43,9 +55,14 @@ export function registerIpcHandlers(): void {
     return { ok: true }
   })
   //
-  ipcMain.handle(IpcChannels.TimerResolveComplete, () => {
-    // TODO (M2): read markComplete and write Status = Done to the Focus Tasks DB item
-  })
+  ipcMain.handle(
+    IpcChannels.TimerResolveComplete,
+    (_e, { markComplete }: { markComplete: boolean }) => {
+      const task = activeFocusTask
+      activeFocusTask = null
+      if (markComplete && task?.id) markTaskDone(task.id)
+    }
+  )
   // Notion
   ipcMain.handle(IpcChannels.NotionIsConfigured, () => {
     const targets = store.get('notionTargets')
