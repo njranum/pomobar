@@ -4,6 +4,7 @@ import { useStats } from './hooks/useStats'
 import { validateConfig } from '@/shared/validateConfig'
 import type { PomodoroConfig } from '@/shared/types'
 import SetupWizard from './components/SetupWizard'
+import DiscordSetup from './components/DiscordSetup'
 
 const fmtFocus = (ms: number): string => {
   const m = Math.round(ms / 60000)
@@ -14,7 +15,7 @@ export default function App(): React.JSX.Element {
   const { snap, startFocus, pause, resume, cancel, endEarly, prompt, resolvePrompt } = useTimer() // live timer state
 
   const [task, setTask] = useState('') // what we type into the box
-  const [view, setView] = useState<'main' | 'config' | 'wizard'>('main')
+  const [view, setView] = useState<'main' | 'config' | 'wizard' | 'discord'>('main')
   const [cfg, setCfg] = useState<PomodoroConfig | null>(null)
   const [configured, setConfigured] = useState(true)
 
@@ -34,6 +35,18 @@ export default function App(): React.JSX.Element {
   const isActive = snap?.state === 'focus' || snap?.state === 'paused'
 
   const stats = useStats()
+  // discord setup view
+  if (view === 'discord') {
+    return (
+      <DiscordSetup
+        currentUrl={cfg?.discordWebhookUrl ?? null}
+        onComplete={() => {
+          window.api.getConfig().then(setCfg)
+          setView('config')
+        }}
+      />
+    )
+  }
   // wizard view
   if (view === 'wizard') {
     return (
@@ -92,14 +105,6 @@ export default function App(): React.JSX.Element {
                 className="w-20 rounded border px-2 py-1"
               />
             </label>
-            <label className="flex items-center justify-between gap-2">Discord webhook</label>
-            <input
-              type="password"
-              value={cfg.discordWebhookUrl ?? ''}
-              onChange={(e) => setCfg({ ...cfg, discordWebhookUrl: e.target.value })}
-              placeholder="https://discord.com/api/webhooks/..."
-              className="2-40 rounded border px-2 py-1"
-            />
             {errors.length > 0 && (
               <ul className="text-sm text-red-600">
                 {errors.map((e) => (
@@ -109,28 +114,34 @@ export default function App(): React.JSX.Element {
             )}
             <button
               disabled={errors.length > 0}
-              onClick={() =>
-                window.api.setConfig({
-                  ...cfg,
-                  discordWebhookUrl: cfg.discordWebhookUrl?.trim()
-                    ? cfg.discordWebhookUrl.trim()
-                    : null,
-                })
-              }
+              onClick={() => window.api.setConfig({ ...cfg })}
               className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
             </button>
-            <div className="mt-1 flex items-center justify-between border-t pt-3">
-              <span className="text-sm text-gray-600">
-                Notion {configured ? '✓ connected' : '✗ not connected'}
-              </span>
-              <button
-                onClick={() => setView('wizard')}
-                className="text-sm text-blue-600 hover:underline"
-              >
-                {configured ? 'Reconnect' : 'Connect'}
-              </button>
+            <div className="mt-1 flex flex-col gap-2 border-t pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">
+                  Notion {configured ? '✓ connected' : '✗ not connected'}
+                </span>
+                <button
+                  onClick={() => setView('wizard')}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  {configured ? 'Reconnect' : 'Connect'}
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">
+                  Discord {cfg.discordWebhookUrl ? '✓ connected' : '✗ not connected'}
+                </span>
+                <button
+                  onClick={() => setView('discord')}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  {cfg.discordWebhookUrl ? 'Reconnect' : 'Connect'}
+                </button>
+              </div>
             </div>
           </div>
         )}
