@@ -73,12 +73,9 @@ export function registerIpcHandlers(): void {
       const c = new Client({ auth: p.secret })
       const tasksPageId = extractNotionId(p.tasksDbId)
       const sessionsPageId = extractNotionId(p.sessionsDbId)
-      const [tasksDbId, sessionsDbId] = await Promise.all([
-        resolveDataSourceId(c, tasksPageId),
-        resolveDataSourceId(c, sessionsPageId),
-      ])
+      const tasksDbId = await resolveDataSourceId(c, tasksPageId)
       store.set('notionSecret', p.secret)
-      store.set('notionTargets', { tasksDbId, sessionsDbId })
+      store.set('notionTargets', { tasksDbId, sessionsDbId: sessionsPageId })
       resetNotion()
     }
   )
