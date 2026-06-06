@@ -1,6 +1,6 @@
 import Store from 'electron-store'
 import { DEFAULT_CONFIG } from '@/shared/types'
-import type { PomodoroConfig, SessionRecord, TaskRef } from '@/shared/types'
+import type { PomodoroConfig, SessionRecord, PickerTask } from '@/shared/types'
 // Create a skeleton schema
 
 export interface PersistedState {
@@ -26,7 +26,7 @@ export interface StoreSchema {
   lastState: PersistedState | null
   notionSecret: string | null
   notionTargets: NotionTargets
-  taskCache: TaskRef[]
+  taskCache: PickerTask[]
 }
 
 const store = new Store<StoreSchema>({

@@ -28,41 +28,49 @@ const fmtDate = (iso: string): string => {
 
 export default function TaskPicker({ disabled, selected, onSelect }: Props): React.JSX.Element {
   const [tasks, setTasks] = useState<PickerTask[]>([])
-  const [loading, setLoading] = useState(true)
+  const [stale, setStale] = useState(true)
 
   useEffect(() => {
-    window.api.fetchTasks().then((fetched) => {
-      setTasks(fetched)
-      setLoading(false)
-    })
+    window.api.getTaskCache().then(setTasks)
+    window.api
+      .fetchTasks()
+      .then((fresh) => {
+        setTasks(fresh)
+        setStale(false)
+      })
+      .catch(() => setStale(false))
   }, [])
 
   const handleRefresh = (): void => {
-    setLoading(true)
-    window.api.fetchTasks().then((fetched) => {
-      setTasks(fetched)
-      setLoading(false)
-    })
-  }
-
-  if (loading) {
-    return <p className="text-sm text-gray-400">Loading tasks…</p>
+    setStale(true)
+    window.api
+      .fetchTasks()
+      .then((fresh) => {
+        setTasks(fresh)
+        setStale(false)
+      })
+      .catch(() => setStale(false))
   }
 
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-500">Select a task</span>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500">Select a task</span>
+          {stale && <span className="text-xs text-gray-300">↻</span>}
+        </div>
         <button
           onClick={handleRefresh}
           disabled={disabled}
           className="text-xs text-blue-600 hover:underline disabled:opacity-40"
         >
-          ↻ Refresh
+          Refresh
         </button>
       </div>
       {tasks.length === 0 ? (
-        <p className="text-sm text-gray-400">No tasks scheduled — add one in Notion.</p>
+        <p className="text-sm text-gray-400">
+          {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
+        </p>
       ) : (
         <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto">
           {tasks.map((t) => (
