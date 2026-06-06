@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { IpcChannels } from '@/shared/ipc-channels'
-import type { TimerSnapshot, PomodoroConfig, DayStats, TaskRef } from '@/shared/types'
+import type { TimerSnapshot, PomodoroConfig, DayStats, TaskRef, PickerTask } from '@/shared/types'
 
 const api = {
   // electron store
@@ -27,6 +27,7 @@ const api = {
     ipcRenderer.invoke(IpcChannels.NotionValidate, { secret, tasksDbId }),
   notionSetup: (p: { secret: string; tasksDbId: string; sessionsDbId: string }): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.NotionSetup, p),
+  fetchTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TasksFetch),
   // events: main -> renderer (each returns an unsubscribe fn)
   onSnapshot: (cb: (s: TimerSnapshot) => void): (() => void) => {
     const h = (_: unknown, s: TimerSnapshot): void => cb(s)

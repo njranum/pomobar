@@ -48,6 +48,13 @@ export interface SessionRecord {
   notionPageId: string | null
 }
 
+export interface PickerTask {
+  id: string
+  title: string
+  scheduledDate: string | null
+  overdue: boolean
+}
+
 export interface DayStats {
   pomodorosToday: number
   focusMsToday: number
