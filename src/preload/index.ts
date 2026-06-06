@@ -22,6 +22,7 @@ const api = {
   getConfig: (): Promise<PomodoroConfig> => ipcRenderer.invoke(IpcChannels.ConfigGet),
   setConfig: (patch: Partial<PomodoroConfig>): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.ConfigSet, patch),
+  isConfigured: (): Promise<boolean> => ipcRenderer.invoke(IpcChannels.NotionIsConfigured),
   notionValidate: (secret: string, tasksDbId: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(IpcChannels.NotionValidate, { secret, tasksDbId }),
   notionSetup: (p: { secret: string; tasksDbId: string; sessionsDbId: string }): Promise<void> =>

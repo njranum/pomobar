@@ -3,6 +3,7 @@ import { useTimer } from './hooks/useTimer'
 import { useStats } from './hooks/useStats'
 import { validateConfig } from '@/shared/validateConfig'
 import type { PomodoroConfig } from '@/shared/types'
+import SetupWizard from './components/SetupWizard'
 
 const fmtFocus = (ms: number): string => {
   const m = Math.round(ms / 60000)
@@ -13,11 +14,16 @@ export default function App(): React.JSX.Element {
   const { snap, startFocus, pause, resume, cancel, endEarly, prompt, resolvePrompt } = useTimer() // live timer state
 
   const [task, setTask] = useState('') // what we type into the box
-  const [view, setView] = useState<'main' | 'config'>('main')
+  const [view, setView] = useState<'main' | 'config' | 'wizard'>('main')
   const [cfg, setCfg] = useState<PomodoroConfig | null>(null)
+  const [configured, setConfigured] = useState(true)
 
   useEffect(() => {
     window.api.getConfig().then(setCfg)
+    window.api.isConfigured().then((ok) => {
+      setConfigured(ok)
+      if (!ok) setView('wizard')
+    })
   }, [])
 
   // allow start if task is non-empty and we are in idle / break states
@@ -28,6 +34,17 @@ export default function App(): React.JSX.Element {
   const isActive = snap?.state === 'focus' || snap?.state === 'paused'
 
   const stats = useStats()
+  // wizard view
+  if (view === 'wizard') {
+    return (
+      <SetupWizard
+        onComplete={() => {
+          setConfigured(true)
+          setView('main')
+        }}
+      />
+    )
+  }
   // config view
   if (view === 'config') {
     const errors = cfg ? validateConfig(cfg) : []
@@ -104,6 +121,17 @@ export default function App(): React.JSX.Element {
             >
               Save
             </button>
+            <div className="mt-1 flex items-center justify-between border-t pt-3">
+              <span className="text-sm text-gray-600">
+                Notion {configured ? '✓ connected' : '✗ not connected'}
+              </span>
+              <button
+                onClick={() => setView('wizard')}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                {configured ? 'Reconnect' : 'Connect'}
+              </button>
+            </div>
           </div>
         )}
       </div>
