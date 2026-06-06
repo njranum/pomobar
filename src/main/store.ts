@@ -11,6 +11,7 @@ export interface PersistedState {
   lastTickAt: string | null
   cyclePosition: number
   task: string | null
+  taskId: string | null
 }
 
 export interface NotionTargets {
