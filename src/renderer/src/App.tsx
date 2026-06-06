@@ -172,7 +172,7 @@ export default function App(): React.JSX.Element {
         />
         <button
           disabled={!canStart}
-          onClick={() => startFocus(task.trim())}
+          onClick={() => startFocus({ id: null, title: task.trim() })}
           className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           Start Session

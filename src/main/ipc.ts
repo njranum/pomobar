@@ -3,7 +3,7 @@ import { IpcChannels } from '../shared/ipc-channels'
 import store from './store'
 import timer from './timer'
 import { computeStats } from './sessions'
-import type { PomodoroConfig } from '@/shared/types'
+import type { PomodoroConfig, TaskRef } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
 import { validateNotionSecret, extractNotionId, resetNotion } from './notion'
 
@@ -19,8 +19,8 @@ export function registerIpcHandlers(): void {
   })
   // Timer Controls
   ipcMain.handle(IpcChannels.TimerGetSnapshot, () => timer.getSnapshot())
-  ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: string }) => {
-    timer.startFocus({ id: null, title: task })
+  ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: TaskRef }) => {
+    timer.startFocus(task)
   })
   ipcMain.handle(IpcChannels.TimerPause, () => timer.pause())
   ipcMain.handle(IpcChannels.TimerResume, () => timer.resume())
