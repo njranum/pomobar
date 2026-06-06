@@ -13,6 +13,8 @@ import {
   fetchScheduledTasks,
 } from './notion'
 
+export let activeFocusTask: TaskRef | null = null
+
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
   ipcMain.handle(IpcChannels.StoreGet, (_event, key: string) => {
@@ -26,11 +28,15 @@ export function registerIpcHandlers(): void {
   // Timer Controls
   ipcMain.handle(IpcChannels.TimerGetSnapshot, () => timer.getSnapshot())
   ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: TaskRef }) => {
+    activeFocusTask = task
     timer.startFocus(task)
   })
   ipcMain.handle(IpcChannels.TimerPause, () => timer.pause())
   ipcMain.handle(IpcChannels.TimerResume, () => timer.resume())
-  ipcMain.handle(IpcChannels.TimerCancel, () => timer.cancel())
+  ipcMain.handle(IpcChannels.TimerCancel, () => {
+    activeFocusTask = null
+    timer.cancel()
+  })
   ipcMain.handle(IpcChannels.TimerEndEarly, () => timer.endEarly())
   // Stats
   ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
