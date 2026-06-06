@@ -35,6 +35,10 @@ export default function App(): React.JSX.Element {
   const isActive = snap?.state === 'focus' || snap?.state === 'paused'
 
   const stats = useStats()
+  const [pendingSync, setPendingSync] = useState(0)
+  useEffect(() => {
+    window.api.getPendingSync().then(setPendingSync)
+  }, [stats])
   // discord setup view
   if (view === 'discord') {
     return (
@@ -157,9 +161,19 @@ export default function App(): React.JSX.Element {
             ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}`
             : '- pomodoros | -'}
         </span>
-        <button onClick={() => setView('config')} title="Settings" aria-label="Settings">
-          ⚙
-        </button>
+        <div className="flex items-center gap-2">
+          {pendingSync > 0 && (
+            <span
+              className="text-xs text-gray-300"
+              title={`${pendingSync} session(s) pending sync`}
+            >
+              ●
+            </span>
+          )}
+          <button onClick={() => setView('config')} title="Settings" aria-label="Settings">
+            ⚙
+          </button>
+        </div>
       </div>
       {/* Task picker + start */}
       <div className="flex flex-col gap-2">

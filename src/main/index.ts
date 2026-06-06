@@ -10,7 +10,7 @@ import {
   showPopover,
 } from './broadcast'
 import timer from './timer'
-import { buildRecord, computeStats, writeSession } from './sessions'
+import { buildRecord, computeStats, processSyncQueue, writeSession } from './sessions'
 import type { AppState, TimerSnapshot } from '@/shared/types'
 import { registerNotifications } from './notification'
 import { registerDiscord } from './discord'
@@ -120,9 +120,14 @@ if (!app.requestSingleInstanceLock()) {
     updateTray(timer.getSnapshot()) // paint idle now
     // subscribe to the state change events
     timer.onSnapshot(broadcastSnapshot)
+    processSyncQueue()
+    setInterval(() => {
+      processSyncQueue()
+    }, 5 * 60_000)
     timer.onSessionEnded((e) => {
       writeSession(buildRecord(e))
       broadcastStats(computeStats())
+      processSyncQueue()
     })
     // Subscribe to task complete
     timer.onNaturalComplete(({ type, task }) => {
