@@ -38,7 +38,12 @@ export function registerIpcHandlers(): void {
     activeFocusTask = null
     timer.cancel()
   })
-  ipcMain.handle(IpcChannels.TimerEndEarly, () => timer.endEarly())
+  ipcMain.handle(IpcChannels.TimerEndEarly, () => {
+    const task = activeFocusTask
+    activeFocusTask = null
+    timer.endEarly()
+    if (task?.id) markTaskDone(task.id)
+  })
   // Stats
   ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
   // Config
