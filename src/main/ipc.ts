@@ -56,7 +56,16 @@ export function registerIpcHandlers(): void {
     (_e, { secret, tasksDbId }: { secret: string; tasksDbId: string }) =>
       validateNotionSecret(secret, extractNotionId(tasksDbId))
   )
-  ipcMain.handle(IpcChannels.TasksFetch, () => fetchScheduledTasks())
+  ipcMain.handle(IpcChannels.TasksFetch, async () => {
+    try {
+      const tasks = await fetchScheduledTasks()
+      store.set('taskCache', tasks)
+      return tasks
+    } catch {
+      return store.get('taskCache')
+    }
+  })
+  ipcMain.handle(IpcChannels.TaskCacheGet, () => store.get('taskCache'))
   ipcMain.handle(
     IpcChannels.NotionSetup,
     async (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {

@@ -28,6 +28,7 @@ const api = {
   notionSetup: (p: { secret: string; tasksDbId: string; sessionsDbId: string }): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.NotionSetup, p),
   fetchTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TasksFetch),
+  getTaskCache: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TaskCacheGet),
   // events: main -> renderer (each returns an unsubscribe fn)
   onSnapshot: (cb: (s: TimerSnapshot) => void): (() => void) => {
     const h = (_: unknown, s: TimerSnapshot): void => cb(s)
