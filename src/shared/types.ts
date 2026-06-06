@@ -43,8 +43,16 @@ export interface SessionRecord {
   cycleNumber: number
   completed: boolean
   task: string | null // null on breaks
+  taskId: string | null // Notion page id; null on breaks or plain-text tasks
   syncStatus: SyncStatus
   notionPageId: string | null
+}
+
+export interface PickerTask {
+  id: string
+  title: string
+  scheduledDate: string | null
+  overdue: boolean
 }
 
 export interface DayStats {

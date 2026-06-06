@@ -60,6 +60,7 @@ if (!app.requestSingleInstanceLock()) {
         cycleNumber: ls.cyclePosition,
         completed: false,
         task: ls.task,
+        taskId: ls.taskId ?? null,
       })
     )
     store.set('lastState', null)

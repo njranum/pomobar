@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { useTimer } from './hooks/useTimer'
 import { useStats } from './hooks/useStats'
 import { validateConfig } from '@/shared/validateConfig'
-import type { PomodoroConfig } from '@/shared/types'
+import type { PomodoroConfig, PickerTask } from '@/shared/types'
 import SetupWizard from './components/SetupWizard'
 import DiscordSetup from './components/DiscordSetup'
+import TaskPicker from './components/TaskPicker'
 
 const fmtFocus = (ms: number): string => {
   const m = Math.round(ms / 60000)
@@ -14,7 +15,7 @@ const fmtFocus = (ms: number): string => {
 export default function App(): React.JSX.Element {
   const { snap, startFocus, pause, resume, cancel, endEarly, prompt, resolvePrompt } = useTimer() // live timer state
 
-  const [task, setTask] = useState('') // what we type into the box
+  const [selectedTask, setSelectedTask] = useState<PickerTask | null>(null)
   const [view, setView] = useState<'main' | 'config' | 'wizard' | 'discord'>('main')
   const [cfg, setCfg] = useState<PomodoroConfig | null>(null)
   const [configured, setConfigured] = useState(true)
@@ -27,9 +28,8 @@ export default function App(): React.JSX.Element {
     })
   }, [])
 
-  // allow start if task is non-empty and we are in idle / break states
   const canStart =
-    task.trim().length > 0 &&
+    selectedTask !== null &&
     (snap?.state === 'idle' || snap?.state === 'shortBreak' || snap?.state === 'longBreak')
 
   const isActive = snap?.state === 'focus' || snap?.state === 'paused'
@@ -161,18 +161,14 @@ export default function App(): React.JSX.Element {
           ⚙
         </button>
       </div>
-      {/* Task entry + start */}
+      {/* Task picker + start */}
       <div className="flex flex-col gap-2">
-        <input
-          disabled={isActive}
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          placeholder="What are you going to work on?"
-          className="rounded border px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
-        />
+        <TaskPicker disabled={isActive} selected={selectedTask} onSelect={setSelectedTask} />
         <button
           disabled={!canStart}
-          onClick={() => startFocus(task.trim())}
+          onClick={() => {
+            if (selectedTask) startFocus({ id: selectedTask.id, title: selectedTask.title })
+          }}
           className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           Start Session
@@ -209,7 +205,7 @@ export default function App(): React.JSX.Element {
             <button
               onClick={() => {
                 resolvePrompt(true)
-                setTask('')
+                setSelectedTask(null)
               }}
               className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
             >

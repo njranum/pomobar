@@ -19,6 +19,7 @@ export function buildRecord(p: {
   cycleNumber: number
   completed: boolean
   task: string | null
+  taskId: string | null
 }): SessionRecord {
   const start = new Date(p.startedAt)
   const label =
@@ -34,6 +35,7 @@ export function buildRecord(p: {
     cycleNumber: p.cycleNumber,
     completed: p.completed,
     task: p.type === 'focus' ? p.task : null,
+    taskId: p.type === 'focus' ? p.taskId : null,
     syncStatus: 'pending_sync', // we store locally before attempting to push to Notion
     notionPageId: null,
   }
