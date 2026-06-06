@@ -5,13 +5,16 @@ import timer from './timer'
 import { computeStats } from './sessions'
 import type { PomodoroConfig } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
+import { validateNotionSecret, extractNotionId, resetNotion } from './notion'
 
 export function registerIpcHandlers(): void {
-  // Register the electron-store getter and setters
+  const PROTECTED = new Set(['notionSecret', 'notionTargets'])
   ipcMain.handle(IpcChannels.StoreGet, (_event, key: string) => {
+    if (PROTECTED.has(key)) return undefined
     return store.get(key)
   })
   ipcMain.handle(IpcChannels.StoreSet, (_event, key: string, value: unknown) => {
+    if (PROTECTED.has(key)) return
     return store.set(key, value)
   })
   // Timer Controls
@@ -37,4 +40,25 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.TimerResolveComplete, () => {
     // TODO (M2): read markComplete and write Status = Done to the Focus Tasks DB item
   })
+  // Notion
+  ipcMain.handle(IpcChannels.NotionIsConfigured, () => {
+    const targets = store.get('notionTargets')
+    return !!store.get('notionSecret') && !!targets.tasksDbId && !!targets.sessionsDbId
+  })
+  ipcMain.handle(
+    IpcChannels.NotionValidate,
+    (_e, { secret, tasksDbId }: { secret: string; tasksDbId: string }) =>
+      validateNotionSecret(secret, extractNotionId(tasksDbId))
+  )
+  ipcMain.handle(
+    IpcChannels.NotionSetup,
+    (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
+      store.set('notionSecret', p.secret)
+      store.set('notionTargets', {
+        tasksDbId: extractNotionId(p.tasksDbId),
+        sessionsDbId: extractNotionId(p.sessionsDbId),
+      })
+      resetNotion()
+    }
+  )
 }
