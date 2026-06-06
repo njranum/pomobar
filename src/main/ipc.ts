@@ -3,9 +3,15 @@ import { IpcChannels } from '../shared/ipc-channels'
 import store from './store'
 import timer from './timer'
 import { computeStats } from './sessions'
-import type { PomodoroConfig } from '@/shared/types'
+import type { PomodoroConfig, TaskRef } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
-import { validateNotionSecret, extractNotionId, resetNotion } from './notion'
+import {
+  validateNotionSecret,
+  extractNotionId,
+  resetNotion,
+  resolveDataSourceId,
+  fetchScheduledTasks,
+} from './notion'
 
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
@@ -19,8 +25,8 @@ export function registerIpcHandlers(): void {
   })
   // Timer Controls
   ipcMain.handle(IpcChannels.TimerGetSnapshot, () => timer.getSnapshot())
-  ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: string }) => {
-    timer.startFocus({ id: null, title: task })
+  ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: TaskRef }) => {
+    timer.startFocus(task)
   })
   ipcMain.handle(IpcChannels.TimerPause, () => timer.pause())
   ipcMain.handle(IpcChannels.TimerResume, () => timer.resume())
@@ -50,14 +56,29 @@ export function registerIpcHandlers(): void {
     (_e, { secret, tasksDbId }: { secret: string; tasksDbId: string }) =>
       validateNotionSecret(secret, extractNotionId(tasksDbId))
   )
+  ipcMain.handle(IpcChannels.TasksFetch, async () => {
+    try {
+      const tasks = await fetchScheduledTasks()
+      store.set('taskCache', tasks)
+      return tasks
+    } catch {
+      return store.get('taskCache')
+    }
+  })
+  ipcMain.handle(IpcChannels.TaskCacheGet, () => store.get('taskCache'))
   ipcMain.handle(
     IpcChannels.NotionSetup,
-    (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
+    async (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {
+      const { Client } = await import('@notionhq/client')
+      const c = new Client({ auth: p.secret })
+      const tasksPageId = extractNotionId(p.tasksDbId)
+      const sessionsPageId = extractNotionId(p.sessionsDbId)
+      const [tasksDbId, sessionsDbId] = await Promise.all([
+        resolveDataSourceId(c, tasksPageId),
+        resolveDataSourceId(c, sessionsPageId),
+      ])
       store.set('notionSecret', p.secret)
-      store.set('notionTargets', {
-        tasksDbId: extractNotionId(p.tasksDbId),
-        sessionsDbId: extractNotionId(p.sessionsDbId),
-      })
+      store.set('notionTargets', { tasksDbId, sessionsDbId })
       resetNotion()
     }
   )

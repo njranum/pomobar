@@ -10,12 +10,14 @@ interface ActiveSession {
   sessionStart: number // wall-clock start time never rewritten
   accumulatedMs: number
   task: string | null // focus = task title, breaks = null
+  taskId: string | null // Notion page id; null for breaks or plain-text tasks
   warned: boolean // fires at 20% time left
 }
 
 export interface EndedSession {
   type: SessionType
   task: string | null
+  taskId: string | null
   startedAt: number
   endedAt: number
   durationMs: number
@@ -52,7 +54,7 @@ class Timer extends EventEmitter {
     // dev aid: trace focus starts while testing
     // console.info(`[timer] startFocus — task="${task.title}" cyclePosition=${this.cyclePosition}`)
     const { focusMinutes } = store.get('config')
-    this.begin('focus', focusMinutes, task.title)
+    this.begin('focus', focusMinutes, task.title, task.id)
     this.state = 'focus'
     this.emitSnapshot()
     this.persist()
@@ -187,7 +189,12 @@ class Timer extends EventEmitter {
     this.persist()
   }
 
-  private begin(type: SessionType, minutes: number, task: string | null): void {
+  private begin(
+    type: SessionType,
+    minutes: number,
+    task: string | null,
+    taskId: string | null = null
+  ): void {
     const now = Date.now()
     this.session = {
       type,
@@ -196,6 +203,7 @@ class Timer extends EventEmitter {
       sessionStart: now,
       accumulatedMs: 0,
       task,
+      taskId,
       warned: false,
     }
   }
@@ -205,6 +213,7 @@ class Timer extends EventEmitter {
     this.emit('sessionEnded', {
       type: this.session.type,
       task: this.session.task,
+      taskId: this.session.taskId,
       startedAt: this.session.sessionStart,
       endedAt: Date.now(),
       durationMs: this.elapsed(),
@@ -241,6 +250,7 @@ class Timer extends EventEmitter {
       lastTickAt: new Date().toISOString(),
       cyclePosition: this.cyclePosition,
       task: this.session.task,
+      taskId: this.session.taskId,
     }
   }
 
