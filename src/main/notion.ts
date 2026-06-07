@@ -1,6 +1,9 @@
 import { Client } from '@notionhq/client'
 import type { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints/databases'
-import type { UpdatePageParameters } from '@notionhq/client/build/src/api-endpoints/pages'
+import type {
+  CreatePageParameters,
+  UpdatePageParameters,
+} from '@notionhq/client/build/src/api-endpoints/pages'
 import store from './store'
 import type { PickerTask } from '@/shared/types'
 
@@ -84,6 +87,58 @@ export function markTaskDone(taskId: string): void {
   c.pages.update({ page_id: taskId, properties: props }).catch(() => {
     /* best-effort */
   })
+}
+
+export async function resolvePlanningCollectionId(): Promise<string> {
+  const c = getNotion()
+  if (!c) throw new Error('Notion not configured')
+  const planningDbId = store.get('planningDbId')
+  if (!planningDbId) throw new Error('Planning DB not configured')
+  return resolveDataSourceId(c, planningDbId)
+}
+
+function formatPlanningDate(iso: string): string {
+  const [y, m, d] = iso.split('-')
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
+  return `${d} ${months[parseInt(m, 10) - 1]} ${y}`
+}
+
+export async function createOrFetchTodayPlanningRow(effectiveDateStr: string): Promise<string> {
+  const c = getNotion()
+  if (!c) throw new Error('Notion not configured')
+  const collectionId = await resolvePlanningCollectionId()
+  const planningDbId = store.get('planningDbId') as string
+  const todayName = `Planning — ${formatPlanningDate(effectiveDateStr)}`
+
+  const results = await c.dataSources.query({ data_source_id: collectionId })
+  const existing = results.results.find((page) => {
+    if (page.object !== 'page' || !('properties' in page)) return false
+    const nameProp = page.properties['Name']
+    return nameProp?.type === 'title' && nameProp.title[0]?.plain_text === todayName
+  })
+  if (existing) return existing.id
+
+  const page = await c.pages.create({
+    parent: { database_id: planningDbId },
+    properties: {
+      Name: { title: [{ text: { content: todayName } }] },
+      Date: { date: { start: effectiveDateStr } },
+    } as NonNullable<CreatePageParameters['properties']>,
+  })
+  return page.id
 }
 
 export async function validateNotionSecret(
