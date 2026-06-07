@@ -30,6 +30,7 @@ class Timer extends EventEmitter {
   private session: ActiveSession | null = null
   private cyclePosition = 1
   private readonly interval: NodeJS.Timeout
+  private planningStart: number | undefined
 
   constructor() {
     super()
@@ -101,6 +102,22 @@ class Timer extends EventEmitter {
       `[timer] endEarly — task="${this.session.task}" cyclePosition=${this.cyclePosition} (counts as complete)`
     )
     this.completeFocus() // end early counts as completed
+  }
+
+  startPlanning(): void {
+    if (this.state !== 'idle') return
+    this.state = 'planning'
+    this.planningStart = Date.now()
+    this.emitSnapshot()
+  }
+
+  endPlanning(): { startedAt: number; endedAt: number } {
+    const startedAt = this.planningStart ?? Date.now()
+    this.planningStart = undefined
+    this.state = 'idle'
+    const endedAt = Date.now()
+    this.emitSnapshot()
+    return { startedAt, endedAt }
   }
 
   getSnapshot(): TimerSnapshot {
