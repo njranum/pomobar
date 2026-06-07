@@ -13,6 +13,9 @@ import {
   fetchScheduledTasks,
   markTaskDone,
   createOrFetchTodayPlanningRow,
+  readPlanningGoals,
+  writePomodoroGoal,
+  fetchPlanningTasks,
 } from './notion'
 import { needsPlanning, effectiveDate } from './planning'
 
@@ -38,6 +41,26 @@ export function registerIpcHandlers(): void {
     return { ok: true }
   })
   ipcMain.handle(IpcChannels.NeedsPlanning, () => needsPlanning())
+  ipcMain.handle(IpcChannels.PlanningSync, async () => {
+    const rowId = activePlanningRowId
+    if (!rowId) return { pomodoroGoal: null, focusTimeGoalMins: null, tasks: [] }
+    const { focusTimeGoalMins } = await readPlanningGoals(rowId)
+    const config = store.get('config')
+    let pomodoroGoal: number | null = null
+    if (focusTimeGoalMins !== null) {
+      pomodoroGoal = Math.ceil(focusTimeGoalMins / config.focusMinutes)
+      await writePomodoroGoal(rowId, pomodoroGoal)
+    }
+    const planningTasks = await fetchPlanningTasks(rowId)
+    const scheduledTasks = await fetchScheduledTasks()
+    const merged = [
+      ...planningTasks,
+      ...scheduledTasks.filter((t) => !planningTasks.find((p) => p.id === t.id)),
+    ]
+    store.set('taskCache', merged)
+    activePlanningRowId = null
+    return { pomodoroGoal, focusTimeGoalMins, tasks: merged }
+  })
   ipcMain.handle(IpcChannels.PlanningComplete, () => {
     const { startedAt, endedAt } = timer.endPlanning()
     const record = buildRecord({

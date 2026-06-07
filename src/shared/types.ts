@@ -53,6 +53,7 @@ export interface PickerTask {
   title: string
   scheduledDate: string | null
   overdue: boolean
+  fromPlanning?: boolean
 }
 
 export interface DayStats {
