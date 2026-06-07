@@ -13,6 +13,10 @@ const api = {
   startFocus: (task: TaskRef): Promise<{ ok: boolean; reason?: string }> =>
     ipcRenderer.invoke(IpcChannels.TimerStartFocus, { task }),
   needsPlanning: (): Promise<boolean> => ipcRenderer.invoke(IpcChannels.NeedsPlanning),
+  startPlanning: (): Promise<{ ok: boolean; rowId?: string; reason?: string }> =>
+    ipcRenderer.invoke(IpcChannels.PlanningStart),
+  completePlanning: (): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke(IpcChannels.PlanningComplete),
   pause: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerPause),
   resume: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerResume),
   cancel: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerCancel),

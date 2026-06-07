@@ -25,7 +25,13 @@ export function buildRecord(p: {
 }): SessionRecord {
   const start = new Date(p.startedAt)
   const label =
-    p.type === 'focus' ? 'Focus' : p.type === 'shortBreak' ? 'Short Break' : 'Long Break'
+    p.type === 'focus'
+      ? 'Focus'
+      : p.type === 'shortBreak'
+        ? 'Short Break'
+        : p.type === 'longBreak'
+          ? 'Long Break'
+          : 'Planning'
   return {
     id: randomUUID(),
     name: `${label} - ${fmt(start)}`,
@@ -45,7 +51,13 @@ export function buildRecord(p: {
 
 export function sessionToNotionProps(r: SessionRecord): Record<string, unknown> {
   const typeLabel =
-    r.type === 'focus' ? 'Focus' : r.type === 'shortBreak' ? 'Short Break' : 'Long Break'
+    r.type === 'focus'
+      ? 'Focus'
+      : r.type === 'shortBreak'
+        ? 'Short Break'
+        : r.type === 'longBreak'
+          ? 'Long Break'
+          : 'Planning'
   const props: Record<string, unknown> = {
     Name: { title: [{ text: { content: r.name } }] },
     Date: { date: { start: r.date } },
