@@ -10,8 +10,9 @@ const api = {
     ipcRenderer.invoke(IpcChannels.StoreSet, key, value),
   // invoke: renderer -> main
   getSnapshot: (): Promise<TimerSnapshot> => ipcRenderer.invoke(IpcChannels.TimerGetSnapshot),
-  startFocus: (task: TaskRef): Promise<void> =>
+  startFocus: (task: TaskRef): Promise<{ ok: boolean; reason?: string }> =>
     ipcRenderer.invoke(IpcChannels.TimerStartFocus, { task }),
+  needsPlanning: (): Promise<boolean> => ipcRenderer.invoke(IpcChannels.NeedsPlanning),
   pause: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerPause),
   resume: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerResume),
   cancel: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerCancel),

@@ -13,6 +13,7 @@ import {
   fetchScheduledTasks,
   markTaskDone,
 } from './notion'
+import { needsPlanning } from './planning'
 
 export let activeFocusTask: TaskRef | null = null
 
@@ -29,9 +30,12 @@ export function registerIpcHandlers(): void {
   // Timer Controls
   ipcMain.handle(IpcChannels.TimerGetSnapshot, () => timer.getSnapshot())
   ipcMain.handle(IpcChannels.TimerStartFocus, (_e, { task }: { task: TaskRef }) => {
+    if (needsPlanning()) return { ok: false, reason: 'planning_required' }
     activeFocusTask = task
     timer.startFocus(task)
+    return { ok: true }
   })
+  ipcMain.handle(IpcChannels.NeedsPlanning, () => needsPlanning())
   ipcMain.handle(IpcChannels.TimerPause, () => timer.pause())
   ipcMain.handle(IpcChannels.TimerResume, () => timer.resume())
   ipcMain.handle(IpcChannels.TimerCancel, () => {
