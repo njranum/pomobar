@@ -1,5 +1,5 @@
 export type AppState = 'idle' | 'focus' | 'shortBreak' | 'longBreak' | 'paused' | 'planning'
-export type SessionType = 'focus' | 'shortBreak' | 'longBreak'
+export type SessionType = 'focus' | 'shortBreak' | 'longBreak' | 'planning'
 export interface TaskRef {
   id: string | null
   title: string

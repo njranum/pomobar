@@ -2,7 +2,7 @@ import { ipcMain } from 'electron'
 import { IpcChannels } from '../shared/ipc-channels'
 import store from './store'
 import timer from './timer'
-import { computeStats } from './sessions'
+import { computeStats, buildRecord, writeSession } from './sessions'
 import type { PomodoroConfig, TaskRef } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
 import {
@@ -12,10 +12,12 @@ import {
   resolveDataSourceId,
   fetchScheduledTasks,
   markTaskDone,
+  createOrFetchTodayPlanningRow,
 } from './notion'
-import { needsPlanning } from './planning'
+import { needsPlanning, effectiveDate } from './planning'
 
 export let activeFocusTask: TaskRef | null = null
+export let activePlanningRowId: string | null = null
 
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
@@ -36,6 +38,35 @@ export function registerIpcHandlers(): void {
     return { ok: true }
   })
   ipcMain.handle(IpcChannels.NeedsPlanning, () => needsPlanning())
+  ipcMain.handle(IpcChannels.PlanningComplete, () => {
+    const { startedAt, endedAt } = timer.endPlanning()
+    const record = buildRecord({
+      type: 'planning',
+      task: null,
+      taskId: null,
+      startedAt,
+      endedAt,
+      durationMs: endedAt - startedAt,
+      cycleNumber: timer.getSnapshot().cyclePosition,
+      completed: true,
+    })
+    writeSession(record)
+    store.set('lastPlanningDate', effectiveDate())
+    return { ok: true }
+  })
+  ipcMain.handle(IpcChannels.PlanningStart, async () => {
+    const planningDbId = store.get('planningDbId')
+    if (!planningDbId) return { ok: false, reason: 'not_configured' }
+    try {
+      const rowId = await createOrFetchTodayPlanningRow(effectiveDate())
+      activePlanningRowId = rowId
+      store.set('todayPlanningRowId', rowId)
+      timer.startPlanning()
+      return { ok: true, rowId }
+    } catch (e) {
+      return { ok: false, reason: String(e) }
+    }
+  })
   ipcMain.handle(IpcChannels.TimerPause, () => timer.pause())
   ipcMain.handle(IpcChannels.TimerResume, () => timer.resume())
   ipcMain.handle(IpcChannels.TimerCancel, () => {
