@@ -19,6 +19,11 @@ export interface NotionTargets {
   sessionsDbId: string | null
 }
 
+export interface DailyGoals {
+  pomodoroGoal: number | null
+  focusTimeGoalMins: number | null
+}
+
 export interface StoreSchema {
   config: PomodoroConfig
   sessions: SessionRecord[]
@@ -30,6 +35,7 @@ export interface StoreSchema {
   planningDbId: string | null
   lastPlanningDate: string | null
   todayPlanningRowId: string | null
+  dailyGoals: DailyGoals
 }
 
 const store = new Store<StoreSchema>({
@@ -44,6 +50,7 @@ const store = new Store<StoreSchema>({
     planningDbId: null,
     lastPlanningDate: null,
     todayPlanningRowId: null,
+    dailyGoals: { pomodoroGoal: null, focusTimeGoalMins: null },
   },
 })
 export default store // default export matching store in ipc.ts
