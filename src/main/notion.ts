@@ -141,6 +141,33 @@ export async function createOrFetchTodayPlanningRow(effectiveDateStr: string): P
   return page.id
 }
 
+export async function writePomodoroGoal(rowId: string, pomodoroGoal: number): Promise<void> {
+  const c = getNotion()
+  if (!c) throw new Error('Notion not configured')
+  const props: UpdatePageParameters['properties'] = {
+    'Pomodoro Goal': { number: pomodoroGoal },
+  }
+  await c.pages.update({ page_id: rowId, properties: props })
+}
+
+export async function fetchPlanningTasks(rowId: string): Promise<PickerTask[]> {
+  const c = getNotion()
+  if (!c) throw new Error('Notion not configured')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const page = (await (c.pages as any).retrieve({ page_id: rowId })) as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const props = page.properties as Record<string, any>
+  const relations: Array<{ id: string }> = props['Tasks to Complete']?.relation ?? []
+  return Promise.all(
+    relations.map(async ({ id }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const t = (await (c.pages as any).retrieve({ page_id: id })) as any
+      const title: string = t.properties?.Name?.title?.[0]?.plain_text ?? 'Untitled'
+      return { id, title, scheduledDate: null, overdue: false, fromPlanning: true }
+    })
+  )
+}
+
 export async function readPlanningGoals(
   rowId: string
 ): Promise<{ focusTimeGoalMins: number | null; pomodoroGoal: number | null }> {

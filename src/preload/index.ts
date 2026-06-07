@@ -17,6 +17,11 @@ const api = {
     ipcRenderer.invoke(IpcChannels.PlanningStart),
   completePlanning: (): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(IpcChannels.PlanningComplete),
+  syncPlanning: (): Promise<{
+    pomodoroGoal: number | null
+    focusTimeGoalMins: number | null
+    tasks: PickerTask[]
+  }> => ipcRenderer.invoke(IpcChannels.PlanningSync),
   pause: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerPause),
   resume: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerResume),
   cancel: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerCancel),
