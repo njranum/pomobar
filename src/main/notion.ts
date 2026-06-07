@@ -141,6 +141,21 @@ export async function createOrFetchTodayPlanningRow(effectiveDateStr: string): P
   return page.id
 }
 
+export async function readPlanningGoals(
+  rowId: string
+): Promise<{ focusTimeGoalMins: number | null; pomodoroGoal: number | null }> {
+  const c = getNotion()
+  if (!c) throw new Error('Notion not configured')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const page = (await (c.pages as any).retrieve({ page_id: rowId })) as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const props = page.properties as Record<string, any>
+  return {
+    focusTimeGoalMins: props['Focus Time Goal']?.number ?? null,
+    pomodoroGoal: props['Pomodoro Goal']?.number ?? null,
+  }
+}
+
 export async function validateNotionSecret(
   secret: string,
   tasksDbId: string
