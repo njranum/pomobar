@@ -141,6 +141,9 @@ export function registerIpcHandlers(): void {
     }
   })
   ipcMain.handle(IpcChannels.TaskCacheGet, () => store.get('taskCache'))
+  ipcMain.handle(IpcChannels.PlanningTasksGet, () =>
+    store.get('taskCache').filter((t) => t.fromPlanning === true)
+  )
   ipcMain.handle(IpcChannels.SyncPendingGet, () => store.get('syncQueue').length)
   ipcMain.handle(IpcChannels.DailyGoalsGet, () => store.get('dailyGoals'))
   ipcMain.handle(
