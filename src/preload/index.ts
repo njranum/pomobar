@@ -17,6 +17,8 @@ const api = {
     ipcRenderer.invoke(IpcChannels.PlanningStart),
   completePlanning: (): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke(IpcChannels.PlanningComplete),
+  getDailyGoals: (): Promise<{ pomodoroGoal: number | null; focusTimeGoalMins: number | null }> =>
+    ipcRenderer.invoke(IpcChannels.DailyGoalsGet),
   syncPlanning: (): Promise<{
     pomodoroGoal: number | null
     focusTimeGoalMins: number | null
