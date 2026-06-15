@@ -23,9 +23,9 @@ export function createPopover(): BrowserWindow {
     },
   })
 
-  if (process.env['ELECTRON_RENDERER_URL']) {
-    popover.webContents.openDevTools({ mode: 'detach' })
-  }
+  // if (process.env['ELECTRON_RENDERER_URL']) {
+  //   popover.webContents.openDevTools({ mode: 'detach' })
+  // }
 
   // Load renderer
   if (process.env['ELECTRON_RENDERER_URL']) {
