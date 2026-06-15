@@ -256,7 +256,12 @@ export default function App(): React.JSX.Element {
           )}
           {/* Task picker + start */}
           <div className="flex flex-col gap-2">
-            <TaskPicker disabled={isActive} selected={selectedTask} onSelect={setSelectedTask} />
+            <TaskPicker
+              disabled={isActive}
+              planningMode={planningMode}
+              selected={selectedTask}
+              onSelect={setSelectedTask}
+            />
             <button
               disabled={!canStart}
               onClick={() => {

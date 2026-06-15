@@ -3,6 +3,7 @@ import type { PickerTask } from '@/shared/types'
 
 interface Props {
   disabled: boolean
+  planningMode: 'idle' | 'in_progress' | 'syncing' | 'done'
   selected: PickerTask | null
   onSelect: (task: PickerTask | null) => void
 }
@@ -26,9 +27,15 @@ const fmtDate = (iso: string): string => {
   return `${months[Number(m) - 1]} ${Number(d)}`
 }
 
-export default function TaskPicker({ disabled, selected, onSelect }: Props): React.JSX.Element {
+export default function TaskPicker({
+  disabled,
+  planningMode,
+  selected,
+  onSelect,
+}: Props): React.JSX.Element {
   const [tasks, setTasks] = useState<PickerTask[]>([])
   const [stale, setStale] = useState(true)
+  const [planningTasks, setPlanningTasks] = useState<PickerTask[]>([])
 
   useEffect(() => {
     window.api.getTaskCache().then(setTasks)
@@ -41,6 +48,12 @@ export default function TaskPicker({ disabled, selected, onSelect }: Props): Rea
       .catch(() => setStale(false))
   }, [])
 
+  useEffect(() => {
+    if (planningMode === 'done') {
+      window.api.getPlanningTasks().then(setPlanningTasks)
+    }
+  }, [planningMode])
+
   const handleRefresh = (): void => {
     setStale(true)
     window.api
@@ -51,6 +64,32 @@ export default function TaskPicker({ disabled, selected, onSelect }: Props): Rea
       })
       .catch(() => setStale(false))
   }
+
+  const scheduledTasks = tasks.filter((t) => !t.fromPlanning)
+  const isEmpty = planningTasks.length === 0 && scheduledTasks.length === 0
+
+  const taskButton = (t: PickerTask, showDate: boolean): React.JSX.Element => (
+    <button
+      disabled={disabled}
+      onClick={() => onSelect(selected?.id === t.id ? null : t)}
+      className={`flex w-full items-center justify-between gap-2 rounded border px-2 py-1.5 text-left text-sm ${
+        selected?.id === t.id
+          ? 'border-blue-600 bg-blue-600 text-white'
+          : 'border-gray-200 hover:border-gray-300'
+      } disabled:cursor-not-allowed disabled:opacity-50`}
+    >
+      <span className="truncate">{t.title}</span>
+      {showDate && t.scheduledDate && (
+        <span
+          className={`shrink-0 text-xs ${
+            selected?.id === t.id ? 'text-white/70' : t.overdue ? 'text-red-500' : 'text-gray-400'
+          }`}
+        >
+          {fmtDate(t.scheduledDate)}
+        </span>
+      )}
+    </button>
+  )
 
   return (
     <div className="flex flex-col gap-1">
@@ -67,39 +106,23 @@ export default function TaskPicker({ disabled, selected, onSelect }: Props): Rea
           Refresh
         </button>
       </div>
-      {tasks.length === 0 ? (
+      {isEmpty ? (
         <p className="text-sm text-gray-400">
           {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
         </p>
       ) : (
         <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto">
-          {tasks.map((t) => (
-            <li key={t.id}>
-              <button
-                disabled={disabled}
-                onClick={() => onSelect(selected?.id === t.id ? null : t)}
-                className={`flex w-full items-center justify-between gap-2 rounded border px-2 py-1.5 text-left text-sm ${
-                  selected?.id === t.id
-                    ? 'border-blue-600 bg-blue-600 text-white'
-                    : 'border-gray-200 hover:border-gray-300'
-                } disabled:cursor-not-allowed disabled:opacity-50`}
-              >
-                <span className="truncate">{t.title}</span>
-                {t.scheduledDate && (
-                  <span
-                    className={`shrink-0 text-xs ${
-                      selected?.id === t.id
-                        ? 'text-white/70'
-                        : t.overdue
-                          ? 'text-red-500'
-                          : 'text-gray-400'
-                    }`}
-                  >
-                    {fmtDate(t.scheduledDate)}
-                  </span>
-                )}
-              </button>
-            </li>
+          {planningTasks.length > 0 && (
+            <li className="px-1 pt-1 text-xs font-medium text-gray-400">Today&apos;s Plan</li>
+          )}
+          {planningTasks.map((t) => (
+            <li key={t.id}>{taskButton(t, false)}</li>
+          ))}
+          {planningTasks.length > 0 && scheduledTasks.length > 0 && (
+            <li className="px-1 pt-1 text-xs font-medium text-gray-400">Scheduled</li>
+          )}
+          {scheduledTasks.map((t) => (
+            <li key={t.id}>{taskButton(t, true)}</li>
           ))}
         </ul>
       )}

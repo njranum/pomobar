@@ -41,6 +41,7 @@ const api = {
     ipcRenderer.invoke(IpcChannels.NotionSetup, p),
   fetchTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TasksFetch),
   getTaskCache: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TaskCacheGet),
+  getPlanningTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.PlanningTasksGet),
   getPendingSync: (): Promise<number> => ipcRenderer.invoke(IpcChannels.SyncPendingGet),
   // events: main -> renderer (each returns an unsubscribe fn)
   onSnapshot: (cb: (s: TimerSnapshot) => void): (() => void) => {
