@@ -15,6 +15,10 @@ export function createPopover(): BrowserWindow {
     maximizable: false,
     skipTaskbar: true,
     alwaysOnTop: true,
+    transparent: true,
+    backgroundColor: '#00000000',
+    vibrancy: 'popover',
+    visualEffectState: 'active',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
