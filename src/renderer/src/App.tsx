@@ -254,7 +254,7 @@ export default function App(): React.JSX.Element {
       <div className="mx-4 border-t border-gray-300 opacity-25" />
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      <div className="flex flex-1 flex-col overflow-hidden px-4 py-3">
         {planningMode === 'in_progress' && (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-gray-600">
@@ -275,11 +275,13 @@ export default function App(): React.JSX.Element {
           <>
             {/* Task picker */}
             {!isActive && prompt === null && planningMode !== 'idle' && (
-              <TaskPicker
-                planningMode={planningMode}
-                selected={selectedTask}
-                onSelect={setSelectedTask}
-              />
+              <div className="flex min-h-0 flex-1 flex-col">
+                <TaskPicker
+                  planningMode={planningMode}
+                  selected={selectedTask}
+                  onSelect={setSelectedTask}
+                />
+              </div>
             )}
 
             {/* Active-session controls */}
