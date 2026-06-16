@@ -47,14 +47,14 @@ export default function App(): React.JSX.Element {
   const [planningMode, setPlanningMode] = useState<'idle' | 'in_progress' | 'syncing' | 'done'>(
     'idle'
   )
-  const [pomodoroGoal, setPomodoroGoal] = useState<number | null>(null)
   const [focusTimeGoalMins, setFocusTimeGoalMins] = useState<number | null>(null)
+  const pomodoroGoal =
+    cfg && focusTimeGoalMins !== null ? Math.ceil(focusTimeGoalMins / cfg.focusMinutes) : null
 
   useEffect(() => {
     window.api.needsPlanning().then(async (needs) => {
       if (!needs) {
         const [goals] = await Promise.all([window.api.getDailyGoals(), window.api.syncPlanning()])
-        setPomodoroGoal(goals.pomodoroGoal)
         setFocusTimeGoalMins(goals.focusTimeGoalMins)
         setPlanningMode('done')
       }
@@ -65,7 +65,6 @@ export default function App(): React.JSX.Element {
     setPlanningMode('syncing')
     await window.api.completePlanning()
     const result = await window.api.syncPlanning()
-    setPomodoroGoal(result.pomodoroGoal)
     setFocusTimeGoalMins(result.focusTimeGoalMins)
     setPlanningMode('done')
   }
