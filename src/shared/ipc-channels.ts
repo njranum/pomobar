@@ -19,6 +19,14 @@ export const IpcChannels = {
   TasksFetch: 'tasks:fetch', // → PickerTask[] (fetches fresh + writes cache)
   TaskCacheGet: 'tasks:cacheGet', // → PickerTask[] (returns cache instantly)
   SyncPendingGet: 'sync:pendingGet', // → number (syncQueue.length)
+  NeedsPlanning: 'planning:needs',
+  PlanningStart: 'planning:start',
+  PlanningComplete: 'planning:complete',
+  PlanningSync: 'planning:sync',
+  PlanningDbSet: 'planning:db-set',
+  PlanningDbGet: 'planning:db-get',
+  DailyGoalsGet: 'config:daily-goals-get',
+  PlanningTasksGet: 'planning:tasks-get',
   // events: main -> renderer (push)
   TimerSnapshot: 'timer:snapshot', // TimerSnapshot
   StatsUpdated: 'stats:updated', // DayStats

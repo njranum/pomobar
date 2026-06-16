@@ -10,8 +10,20 @@ const api = {
     ipcRenderer.invoke(IpcChannels.StoreSet, key, value),
   // invoke: renderer -> main
   getSnapshot: (): Promise<TimerSnapshot> => ipcRenderer.invoke(IpcChannels.TimerGetSnapshot),
-  startFocus: (task: TaskRef): Promise<void> =>
+  startFocus: (task: TaskRef): Promise<{ ok: boolean; reason?: string }> =>
     ipcRenderer.invoke(IpcChannels.TimerStartFocus, { task }),
+  needsPlanning: (): Promise<boolean> => ipcRenderer.invoke(IpcChannels.NeedsPlanning),
+  startPlanning: (): Promise<{ ok: boolean; rowId?: string; reason?: string }> =>
+    ipcRenderer.invoke(IpcChannels.PlanningStart),
+  completePlanning: (): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke(IpcChannels.PlanningComplete),
+  getDailyGoals: (): Promise<{ pomodoroGoal: number | null; focusTimeGoalMins: number | null }> =>
+    ipcRenderer.invoke(IpcChannels.DailyGoalsGet),
+  syncPlanning: (): Promise<{
+    pomodoroGoal: number | null
+    focusTimeGoalMins: number | null
+    tasks: PickerTask[]
+  }> => ipcRenderer.invoke(IpcChannels.PlanningSync),
   pause: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerPause),
   resume: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerResume),
   cancel: (): Promise<void> => ipcRenderer.invoke(IpcChannels.TimerCancel),
@@ -25,10 +37,14 @@ const api = {
   isConfigured: (): Promise<boolean> => ipcRenderer.invoke(IpcChannels.NotionIsConfigured),
   notionValidate: (secret: string, tasksDbId: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(IpcChannels.NotionValidate, { secret, tasksDbId }),
+  getPlanningDb: (): Promise<string | null> => ipcRenderer.invoke(IpcChannels.PlanningDbGet),
+  setPlanningDb: (url: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(IpcChannels.PlanningDbSet, url),
   notionSetup: (p: { secret: string; tasksDbId: string; sessionsDbId: string }): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.NotionSetup, p),
   fetchTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TasksFetch),
   getTaskCache: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TaskCacheGet),
+  getPlanningTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.PlanningTasksGet),
   getPendingSync: (): Promise<number> => ipcRenderer.invoke(IpcChannels.SyncPendingGet),
   // events: main -> renderer (each returns an unsubscribe fn)
   onSnapshot: (cb: (s: TimerSnapshot) => void): (() => void) => {

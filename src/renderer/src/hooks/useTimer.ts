@@ -9,7 +9,7 @@ import type { TimerSnapshot, TaskRef } from '@/shared/types'
 interface UseTimer {
   snap: TimerSnapshot | null
   prompt: string | null
-  startFocus: (task: TaskRef) => Promise<void>
+  startFocus: (task: TaskRef) => Promise<{ ok: boolean; reason?: string }>
   pause: () => Promise<void>
   resume: () => Promise<void>
   cancel: () => Promise<void>
