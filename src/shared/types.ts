@@ -59,4 +59,5 @@ export interface PickerTask {
 export interface DayStats {
   pomodorosToday: number
   focusMsToday: number
+  streak: number
 }

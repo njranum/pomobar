@@ -237,7 +237,7 @@ export default function App(): React.JSX.Element {
       <div className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm text-gray-600">
         <span>
           {stats
-            ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}`
+            ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}${stats.streak > 0 ? ` | ${stats.streak}d streak` : ''}`
             : '- pomodoros | -'}
         </span>
         <div className="flex items-center gap-2">
