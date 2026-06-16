@@ -21,6 +21,10 @@ export default function App(): React.JSX.Element {
   const [configured, setConfigured] = useState(true)
 
   useEffect(() => {
+    ;(document.activeElement as HTMLElement | null)?.blur()
+  }, [])
+
+  useEffect(() => {
     window.api.getConfig().then(setCfg)
     window.api.isConfigured().then((ok) => {
       setConfigured(ok)
@@ -43,19 +47,16 @@ export default function App(): React.JSX.Element {
   const [planningMode, setPlanningMode] = useState<'idle' | 'in_progress' | 'syncing' | 'done'>(
     'idle'
   )
-  const [pomodoroGoal, setPomodoroGoal] = useState<number | null>(null)
   const [focusTimeGoalMins, setFocusTimeGoalMins] = useState<number | null>(null)
+  const pomodoroGoal =
+    cfg && focusTimeGoalMins !== null ? Math.ceil(focusTimeGoalMins / cfg.focusMinutes) : null
 
   useEffect(() => {
-    window.api.needsPlanning().then((needs) => {
+    window.api.needsPlanning().then(async (needs) => {
       if (!needs) {
-        window.api.getDailyGoals().then((goals) => {
-          if (goals.pomodoroGoal !== null || goals.focusTimeGoalMins !== null) {
-            setPomodoroGoal(goals.pomodoroGoal)
-            setFocusTimeGoalMins(goals.focusTimeGoalMins)
-            setPlanningMode('done')
-          }
-        })
+        const [goals] = await Promise.all([window.api.getDailyGoals(), window.api.syncPlanning()])
+        setFocusTimeGoalMins(goals.focusTimeGoalMins)
+        setPlanningMode('done')
       }
     })
   }, [])
@@ -64,7 +65,6 @@ export default function App(): React.JSX.Element {
     setPlanningMode('syncing')
     await window.api.completePlanning()
     const result = await window.api.syncPlanning()
-    setPomodoroGoal(result.pomodoroGoal)
     setFocusTimeGoalMins(result.focusTimeGoalMins)
     setPlanningMode('done')
   }
@@ -75,26 +75,6 @@ export default function App(): React.JSX.Element {
       setPlanningMode('in_progress')
     } else if (result.reason === 'not_configured') {
       setView('config')
-    }
-  }
-
-  const [planningUrl, setPlanningUrl] = useState('')
-  const [planningError, setPlanningError] = useState<string | null>(null)
-  const [planningIsSet, setPlanningIsSet] = useState(false)
-
-  useEffect(() => {
-    if (view === 'config') {
-      window.api.getPlanningDb().then((id) => setPlanningIsSet(!!id))
-    }
-  }, [view])
-
-  const handleSavePlanningDb = async (): Promise<void> => {
-    const result = await window.api.setPlanningDb(planningUrl)
-    if (result.ok) {
-      setPlanningIsSet(true)
-      setPlanningError(null)
-    } else {
-      setPlanningError(result.error ?? 'Unknown error')
     }
   }
 
@@ -118,6 +98,7 @@ export default function App(): React.JSX.Element {
           setConfigured(true)
           setView('main')
         }}
+        onCancel={configured ? () => setView('config') : undefined}
       />
     )
   }
@@ -177,7 +158,10 @@ export default function App(): React.JSX.Element {
             )}
             <button
               disabled={errors.length > 0}
-              onClick={() => window.api.setConfig({ ...cfg })}
+              onClick={() => {
+                window.api.setConfig({ ...cfg })
+                setView('main')
+              }}
               className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
@@ -205,26 +189,6 @@ export default function App(): React.JSX.Element {
                   {cfg.discordWebhookUrl ? 'Reconnect' : 'Connect'}
                 </button>
               </div>
-              <div className="flex flex-col gap-1 border-t pt-2">
-                <span className="text-sm text-gray-600">
-                  Planning DB {planningIsSet ? '✓ connected' : '✗ not connected'}
-                </span>
-                <input
-                  type="text"
-                  value={planningUrl}
-                  onChange={(e) => setPlanningUrl(e.target.value)}
-                  placeholder="Notion Planning DB URL"
-                  className="rounded border px-2 py-1 text-sm"
-                />
-                {planningError && <p className="text-xs text-red-600">{planningError}</p>}
-                <button
-                  onClick={handleSavePlanningDb}
-                  disabled={!planningUrl}
-                  className="rounded bg-blue-600 px-3 py-1 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Save Planning DB
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -233,13 +197,10 @@ export default function App(): React.JSX.Element {
   }
   // main view
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <div className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm text-gray-600">
-        <span>
-          {stats
-            ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}${stats.streak > 0 ? ` | ${stats.streak}d streak` : ''}`
-            : '- pomodoros | -'}
-        </span>
+    <div className="flex h-screen flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <span className="font-semibold text-gray-800">PomoApp</span>
         <div className="flex items-center gap-2">
           {pendingSync > 0 && (
             <span
@@ -254,120 +215,158 @@ export default function App(): React.JSX.Element {
           </button>
         </div>
       </div>
-      {planningMode === 'in_progress' && (
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-gray-600">Fill in your plan in Notion, then click Complete.</p>
-          <button
-            onClick={handleCompletePlanning}
-            className="rounded bg-blue-600 px-3 py-1 text-white"
-          >
-            Complete Planning
-          </button>
-        </div>
-      )}
-      {planningMode === 'syncing' && <p className="text-sm text-gray-500">Syncing from Notion…</p>}
-      {(planningMode === 'idle' || planningMode === 'done') && (
-        <div className="flex flex-col gap-3">
-          {planningMode === 'done' && pomodoroGoal !== null && stats && (
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <span className="w-20 shrink-0">Pomodoros</span>
-              <progress
-                className="flex-1"
-                value={Math.min(stats.pomodorosToday, pomodoroGoal)}
-                max={pomodoroGoal}
-              />
-              <span>
-                {stats.pomodorosToday}&nbsp;/&nbsp;{pomodoroGoal}
-              </span>
-            </div>
-          )}
-          {planningMode === 'done' && focusTimeGoalMins !== null && stats && (
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <span className="w-20 shrink-0">Focus Time</span>
-              <progress
-                className="flex-1"
-                value={Math.min(stats.focusMsToday, focusTimeGoalMins * 60_000)}
-                max={focusTimeGoalMins * 60_000}
-              />
-              <span>
-                {fmtFocus(stats.focusMsToday)}&nbsp;/&nbsp;{focusTimeGoalMins}m
-              </span>
-            </div>
-          )}
-          {/* Task picker + start */}
-          <div className="flex flex-col gap-2">
-            <TaskPicker
-              disabled={isActive}
-              planningMode={planningMode}
-              selected={selectedTask}
-              onSelect={setSelectedTask}
+      <div className="mx-4 border-t border-gray-300 opacity-25" />
+
+      {/* Stats */}
+      <div className="px-4 py-2">
+        <p className="text-sm text-gray-500">
+          {stats
+            ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}${stats.streak > 0 ? ` | ${stats.streak}d streak` : ''}`
+            : '- pomodoros | -'}
+        </p>
+        {planningMode === 'done' && pomodoroGoal !== null && stats && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+            <span className="w-20 shrink-0">Pomodoros</span>
+            <progress
+              className="flex-1"
+              value={Math.min(stats.pomodorosToday, pomodoroGoal)}
+              max={pomodoroGoal}
             />
+            <span>
+              {stats.pomodorosToday}&nbsp;/&nbsp;{pomodoroGoal}
+            </span>
+          </div>
+        )}
+        {planningMode === 'done' && focusTimeGoalMins !== null && stats && (
+          <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
+            <span className="w-20 shrink-0">Focus Time</span>
+            <progress
+              className="flex-1"
+              value={Math.min(stats.focusMsToday, focusTimeGoalMins * 60_000)}
+              max={focusTimeGoalMins * 60_000}
+            />
+            <span>
+              {fmtFocus(stats.focusMsToday)}&nbsp;/&nbsp;{focusTimeGoalMins}m
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="mx-4 border-t border-gray-300 opacity-25" />
+
+      {/* Scrollable content */}
+      <div className="flex flex-1 flex-col overflow-hidden px-4 py-3">
+        {planningMode === 'in_progress' && (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-gray-600">
+              Fill in your plan in Notion, then click Complete.
+            </p>
             <button
-              disabled={!canStart}
-              onClick={() => {
-                if (selectedTask) startFocus({ id: selectedTask.id, title: selectedTask.title })
-              }}
-              className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={handleCompletePlanning}
+              className="rounded bg-blue-600 px-3 py-1 text-white"
             >
-              Start Session
+              Complete Planning
             </button>
           </div>
+        )}
+        {planningMode === 'syncing' && (
+          <p className="text-sm text-gray-500">Syncing from Notion…</p>
+        )}
+        {(planningMode === 'idle' || planningMode === 'done') && (
+          <>
+            {/* Task picker */}
+            {!isActive && prompt === null && planningMode !== 'idle' && (
+              <div className="flex min-h-0 flex-1 flex-col">
+                <TaskPicker
+                  planningMode={planningMode}
+                  selected={selectedTask}
+                  onSelect={setSelectedTask}
+                />
+              </div>
+            )}
 
-          {/* Active-session controls */}
-          {isActive && (
-            <div className="flex gap-2 rounded border border-gray-200 p-3">
-              <button
-                onClick={() => (snap?.isPause ? resume() : pause())}
-                className="flex-1 rounded bg-gray-200 px-3 py-1"
-              >
-                {snap?.isPause ? 'Resume' : 'Pause'}
-              </button>
-              <button
-                onClick={() => cancel()}
-                className="flex-1 rounded bg-red-600 px-3 py-1 text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => endEarly()}
-                className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
-              >
-                End early + complete
-              </button>
-            </div>
-          )}
-          {prompt !== null && (
-            <div className="flex flex-col gap-2 rounded border border-amber-300 bg-amber-50 p-3">
-              <p>Mark &quot;{prompt}&quot; complete?</p>
-              <div className="flex gap-2">
+            {/* Active-session controls */}
+            {isActive && (
+              <div className="flex flex-col gap-2 rounded border border-gray-100 p-3">
                 <button
-                  onClick={() => {
-                    resolvePrompt(true)
-                    setSelectedTask(null)
-                  }}
-                  className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
+                  onClick={() => (snap?.isPause ? resume() : pause())}
+                  className="rounded bg-gray-100 px-3 py-2"
                 >
-                  Yes
+                  {snap?.isPause ? 'Resume' : 'Pause'}
                 </button>
                 <button
-                  onClick={() => resolvePrompt(false)}
-                  className="flex-1 rounded bg-gray-200 px-3 py-1"
+                  onClick={() => cancel()}
+                  className="rounded bg-red-600 px-3 py-2 text-white"
                 >
-                  No
+                  Cancel
+                </button>
+                <button
+                  onClick={() => endEarly()}
+                  className="rounded bg-green-600 px-3 py-2 text-white"
+                >
+                  End early + complete
                 </button>
               </div>
-            </div>
-          )}
+            )}
 
-          <button
-            onClick={handlePlanMyDay}
-            disabled={planningMode !== 'idle'}
-            title={planningMode === 'done' ? 'Planning complete for today' : undefined}
-            className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Plan My Day
-          </button>
-        </div>
+            {/* Mark complete prompt */}
+            {prompt !== null && (
+              <div className="flex flex-col gap-2 rounded bg-gray-800 p-3 text-white">
+                <p>Mark &quot;{prompt}&quot; complete?</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      resolvePrompt(true)
+                      setSelectedTask(null)
+                    }}
+                    className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => resolvePrompt(false)}
+                    className="flex-1 rounded bg-gray-600 px-3 py-1 text-white"
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Planning needed */}
+            {planningMode === 'idle' && !isActive && (
+              <p className="text-center text-xs text-gray-400">
+                Plan your day before starting focus tasks.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Bottom action */}
+      {!isActive && prompt === null && (planningMode === 'idle' || planningMode === 'done') && (
+        <>
+          <div className="mx-4 border-t border-gray-300 opacity-25" />
+          <div className="px-4 py-3">
+            {planningMode === 'idle' ? (
+              <button
+                onClick={handlePlanMyDay}
+                className="w-full rounded bg-blue-600 px-3 py-2 text-white"
+              >
+                Plan My Day
+              </button>
+            ) : (
+              <button
+                disabled={!canStart}
+                onClick={() => {
+                  if (selectedTask) startFocus({ id: selectedTask.id, title: selectedTask.title })
+                }}
+                className="w-full rounded bg-blue-600 px-3 py-2 text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Start Session
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   )
