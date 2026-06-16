@@ -96,6 +96,7 @@ export default function App(): React.JSX.Element {
           setConfigured(true)
           setView('main')
         }}
+        onCancel={configured ? () => setView('config') : undefined}
       />
     )
   }
@@ -155,7 +156,10 @@ export default function App(): React.JSX.Element {
             )}
             <button
               disabled={errors.length > 0}
-              onClick={() => window.api.setConfig({ ...cfg })}
+              onClick={() => {
+                window.api.setConfig({ ...cfg })
+                setView('main')
+              }}
               className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
