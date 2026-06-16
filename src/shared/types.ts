@@ -4,7 +4,7 @@ export interface TaskRef {
   id: string | null
   title: string
 }
-//
+
 export interface TimerSnapshot {
   state: AppState
   sessionType: SessionType | null
