@@ -121,12 +121,36 @@ export async function processSyncQueue(): Promise<void> {
 }
 
 export function computeStats(): DayStats {
+  const allSessions = store.get('sessions')
   const today = new Date().toISOString().slice(0, 10)
-  const todays = store
-    .get('sessions')
-    .filter((s) => s.date === today && s.type === 'focus' && s.completed)
+  const todays = allSessions.filter((s) => s.date === today && s.type === 'focus' && s.completed)
   return {
     pomodorosToday: todays.length,
     focusMsToday: todays.reduce((a, s) => a + s.durationMs, 0),
+    streak: computeStreak(allSessions),
   }
+}
+
+function effectiveDateForTs(ts: number): string {
+  const d = new Date(ts)
+  const cutoff = new Date(d)
+  cutoff.setHours(4, 0, 0, 0)
+  const ref = d < cutoff ? new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1) : d
+  return ref.toISOString().split('T')[0]
+}
+
+export function computeStreak(sessions: SessionRecord[]): number {
+  const focusDays = new Set(
+    sessions
+      .filter((s) => s.type === 'focus' && s.completed)
+      .map((s) => effectiveDateForTs(new Date(s.startTime).getTime()))
+  )
+  let streak = 0
+  const d = new Date()
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1)
+  while (focusDays.has(d.toISOString().split('T')[0])) {
+    streak++
+    d.setDate(d.getDate() - 1)
+  }
+  return streak
 }
