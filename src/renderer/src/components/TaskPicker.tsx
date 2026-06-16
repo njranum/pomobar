@@ -85,7 +85,7 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
   )
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500">Select a task</span>
@@ -100,7 +100,7 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
           {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
         </p>
       ) : (
-        <ul className="flex max-h-48 flex-col gap-1 overflow-y-auto">
+        <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
           {planningTasks.length > 0 && (
             <li className="px-1 pt-1 text-xs font-medium text-gray-400">Today&apos;s Plan</li>
           )}
