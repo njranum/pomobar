@@ -1,6 +1,16 @@
-import { app, Tray, nativeImage, Menu, type NativeImage, dialog, nativeTheme } from 'electron'
+import {
+  app,
+  Tray,
+  nativeImage,
+  Menu,
+  type NativeImage,
+  dialog,
+  nativeTheme,
+  ipcMain,
+} from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
+import { IpcChannels } from '@/shared/ipc-channels'
 import { registerIpcHandlers } from './ipc'
 import {
   setPopoverWindow,
@@ -105,6 +115,15 @@ if (!app.requestSingleInstanceLock()) {
     // Create the main popoveru
     const popover = createPopover()
     setPopoverWindow(popover)
+
+    // Size the popover to the renderer's content height (top-anchored, grows downward)
+    const POPOVER_MAX_HEIGHT = 640
+    ipcMain.on(IpcChannels.WindowSetHeight, (_e, height: number) => {
+      if (popover.isDestroyed()) return
+      const [w] = popover.getContentSize()
+      const h = Math.min(POPOVER_MAX_HEIGHT, Math.max(1, Math.round(height)))
+      popover.setContentSize(w, h)
+    })
 
     // calculate the time remaining to show in ocon bar
     const mmss = (ms: number): string => {

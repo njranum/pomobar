@@ -46,6 +46,7 @@ const api = {
   getTaskCache: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TaskCacheGet),
   getPlanningTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.PlanningTasksGet),
   getPendingSync: (): Promise<number> => ipcRenderer.invoke(IpcChannels.SyncPendingGet),
+  setWindowHeight: (height: number): void => ipcRenderer.send(IpcChannels.WindowSetHeight, height),
   // events: main -> renderer (each returns an unsubscribe fn)
   onSnapshot: (cb: (s: TimerSnapshot) => void): (() => void) => {
     const h = (_: unknown, s: TimerSnapshot): void => cb(s)

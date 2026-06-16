@@ -42,6 +42,15 @@ export default function App(): React.JSX.Element {
     ;(document.activeElement as HTMLElement | null)?.blur()
   }, [])
 
+  // Report content height so the main process can size the popover to fit
+  useEffect(() => {
+    const report = (): void => window.api.setWindowHeight(document.documentElement.scrollHeight)
+    report()
+    const ro = new ResizeObserver(report)
+    ro.observe(document.body)
+    return () => ro.disconnect()
+  }, [])
+
   useEffect(() => {
     window.api.getConfig().then(setCfg)
     window.api.isConfigured().then((ok) => {
@@ -229,7 +238,7 @@ export default function App(): React.JSX.Element {
   }
   // main view
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <span className="text-[11px] tabular-nums text-label-secondary">

@@ -102,7 +102,7 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
           {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
         </p>
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+        <ul className="flex max-h-72 min-h-0 flex-col gap-0.5 overflow-y-auto">
           {planningTasks.length > 0 && (
             <li className="px-1 pt-1 text-[11px] font-medium uppercase tracking-[0.4px] text-label-tertiary">
               Today&apos;s plan

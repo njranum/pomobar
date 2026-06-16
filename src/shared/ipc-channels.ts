@@ -27,6 +27,7 @@ export const IpcChannels = {
   PlanningDbGet: 'planning:db-get',
   DailyGoalsGet: 'config:daily-goals-get',
   PlanningTasksGet: 'planning:tasks-get',
+  WindowSetHeight: 'window:setHeight', // renderer -> main: resize popover to content height
   // events: main -> renderer (push)
   TimerSnapshot: 'timer:snapshot', // TimerSnapshot
   StatsUpdated: 'stats:updated', // DayStats
