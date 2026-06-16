@@ -411,21 +411,21 @@ export default function App(): React.JSX.Element {
 
             {/* Mark complete prompt */}
             {prompt !== null && (
-              <div className="flex flex-col gap-2 rounded bg-gray-800 p-3 text-white">
-                <p>Mark &quot;{prompt}&quot; complete?</p>
+              <div className="flex flex-col gap-2">
+                <p className="text-[13px] text-label">Mark &quot;{prompt}&quot; complete?</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       resolvePrompt(true)
                       setSelectedTask(null)
                     }}
-                    className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
+                    className="flex-1 rounded-md bg-white/[0.06] px-3 py-2 text-[13px] font-medium text-accent hover:bg-white/[0.1]"
                   >
                     Yes
                   </button>
                   <button
                     onClick={() => resolvePrompt(false)}
-                    className="flex-1 rounded bg-gray-600 px-3 py-1 text-white"
+                    className="flex-1 rounded-md bg-white/[0.06] px-3 py-2 text-[13px] font-medium text-label-secondary hover:bg-white/[0.1]"
                   >
                     No
                   </button>
