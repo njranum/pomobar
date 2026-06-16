@@ -49,13 +49,27 @@ export default function App(): React.JSX.Element {
   const pickerRef = useRef<TaskPickerHandle>(null)
   const [tasksStale, setTasksStale] = useState(true)
 
-  // Report content height so the main process can size the popover to fit
+  // Report NATURAL content height so the main process can size the popover to fit.
+  // Measure #root (never height-pegged) — using documentElement.scrollHeight would
+  // never drop below the viewport, so the window could grow but never shrink.
   useEffect(() => {
-    const report = (): void => window.api.setWindowHeight(document.documentElement.scrollHeight)
+    const el = document.getElementById('root')
+    if (!el) return
+    let raf = 0
+    const report = (): void => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() =>
+        // round UP so a fractional height can't clip into a 1px scrollbar
+        window.api.setWindowHeight(Math.ceil(el.getBoundingClientRect().height))
+      )
+    }
     report()
     const ro = new ResizeObserver(report)
-    ro.observe(document.body)
-    return () => ro.disconnect()
+    ro.observe(el)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+    }
   }, [])
 
   useEffect(() => {
@@ -313,8 +327,8 @@ export default function App(): React.JSX.Element {
           </>
         )}
 
-      {/* Scrollable content */}
-      <div className="flex flex-1 flex-col overflow-hidden px-4 py-3">
+      {/* Middle content — sizes to content (the task list caps + scrolls itself) */}
+      <div className="flex flex-col px-4 py-3">
         {planningMode === 'in_progress' && (
           <div className="flex flex-col gap-3">
             <p className="text-[13px] text-label-secondary">
