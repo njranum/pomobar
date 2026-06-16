@@ -353,7 +353,7 @@ export default function App(): React.JSX.Element {
                         cy="80"
                         r={RING_R}
                         strokeWidth="6"
-                        className="fill-none stroke-track"
+                        className="fill-none stroke-white/20"
                       />
                       <circle
                         cx="80"
@@ -365,11 +365,7 @@ export default function App(): React.JSX.Element {
                         strokeDasharray={RING_C}
                         strokeDashoffset={
                           RING_C *
-                          (1 -
-                            Math.min(
-                              1,
-                              Math.max(0, (snap.totalMs - snap.remainingMs) / (snap.totalMs || 1))
-                            ))
+                          (1 - Math.min(1, Math.max(0, snap.remainingMs / (snap.totalMs || 1))))
                         }
                         transform="rotate(-90 80 80)"
                       />
