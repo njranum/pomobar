@@ -50,11 +50,9 @@ export default function App(): React.JSX.Element {
     window.api.needsPlanning().then((needs) => {
       if (!needs) {
         window.api.getDailyGoals().then((goals) => {
-          if (goals.pomodoroGoal !== null || goals.focusTimeGoalMins !== null) {
-            setPomodoroGoal(goals.pomodoroGoal)
-            setFocusTimeGoalMins(goals.focusTimeGoalMins)
-            setPlanningMode('done')
-          }
+          setPomodoroGoal(goals.pomodoroGoal)
+          setFocusTimeGoalMins(goals.focusTimeGoalMins)
+          setPlanningMode('done')
         })
       }
     })

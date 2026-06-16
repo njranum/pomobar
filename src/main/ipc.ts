@@ -59,6 +59,7 @@ export function registerIpcHandlers(): void {
       ...scheduledTasks.filter((t) => !planningTasks.find((p) => p.id === t.id)),
     ]
     store.set('taskCache', merged)
+    store.set('dailyGoals', { pomodoroGoal, focusTimeGoalMins })
     activePlanningRowId = null
     return { pomodoroGoal, focusTimeGoalMins, tasks: merged }
   })
