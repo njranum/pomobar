@@ -45,7 +45,6 @@
   }
 
   body {
-    min-height: 100vh;
     color: var(--color-text);
     background: transparent;
     line-height: 1.6;

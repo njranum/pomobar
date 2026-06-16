@@ -19,9 +19,6 @@
 }
 
 body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   user-select: none;
 }
@@ -43,11 +40,7 @@ code {
 }
 
 #root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin-bottom: 80px;
+  width: 100%;
 }
 
 .logo {
