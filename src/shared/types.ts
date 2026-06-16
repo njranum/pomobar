@@ -1,5 +1,5 @@
 export type AppState = 'idle' | 'focus' | 'shortBreak' | 'longBreak' | 'paused' | 'planning'
-export type SessionType = 'focus' | 'shortBreak' | 'longBreak'
+export type SessionType = 'focus' | 'shortBreak' | 'longBreak' | 'planning'
 export interface TaskRef {
   id: string | null
   title: string
@@ -53,6 +53,7 @@ export interface PickerTask {
   title: string
   scheduledDate: string | null
   overdue: boolean
+  fromPlanning?: boolean
 }
 
 export interface DayStats {
