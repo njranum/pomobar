@@ -125,50 +125,50 @@ export default function App(): React.JSX.Element {
     const errors = cfg ? validateConfig(cfg) : []
     return (
       <div className="flex flex-col gap-3 p-4">
-        <button onClick={() => setView('main')} className="self-start text-sm text-blue-600">
+        <button onClick={() => setView('main')} className="self-start text-[13px] text-accent">
           ← Back
         </button>
-        <h2 className="text-lg font-semibold">Settings</h2>
+        <h2 className="text-[17px] font-semibold text-label">Settings</h2>
         {cfg && (
           <div className="flex flex-col gap-2">
-            <label className="flex items-center justify-between gap-2">
+            <label className="flex items-center justify-between gap-2 text-[13px] text-label">
               Focus (min)
               <input
                 type="number"
                 value={cfg.focusMinutes}
                 onChange={(e) => setCfg({ ...cfg, focusMinutes: Number(e.target.value) })}
-                className="w-20 rounded border px-2 py-1"
+                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
               />
             </label>
-            <label className="flex items-center justify-between gap-2">
+            <label className="flex items-center justify-between gap-2 text-[13px] text-label">
               Short break (min)
               <input
                 type="number"
                 value={cfg.shortBreakMinutes}
                 onChange={(e) => setCfg({ ...cfg, shortBreakMinutes: Number(e.target.value) })}
-                className="w-20 rounded border px-2 py-1"
+                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
               />
             </label>
-            <label className="flex items-center justify-between gap-2">
+            <label className="flex items-center justify-between gap-2 text-[13px] text-label">
               Long break (min)
               <input
                 type="number"
                 value={cfg.longBreakMinutes}
                 onChange={(e) => setCfg({ ...cfg, longBreakMinutes: Number(e.target.value) })}
-                className="w-20 rounded border px-2 py-1"
+                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
               />
             </label>
-            <label className="flex items-center justify-between gap-2">
+            <label className="flex items-center justify-between gap-2 text-[13px] text-label">
               Pomodoros per cycle
               <input
                 type="number"
                 value={cfg.pomodorosPerCycle}
                 onChange={(e) => setCfg({ ...cfg, pomodorosPerCycle: Number(e.target.value) })}
-                className="w-20 rounded border px-2 py-1"
+                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
               />
             </label>
             {errors.length > 0 && (
-              <ul className="text-sm text-red-600">
+              <ul className="text-[11px] text-danger">
                 {errors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
@@ -180,29 +180,43 @@ export default function App(): React.JSX.Element {
                 window.api.setConfig({ ...cfg })
                 setView('main')
               }}
-              className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md bg-accent px-3 py-2 text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
             </button>
-            <div className="mt-1 flex flex-col gap-2 border-t pt-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  Notion {configured ? '✓ connected' : '✗ not connected'}
+            <div className="mt-1 flex flex-col gap-2 border-t border-separator pt-3">
+              <div className="flex items-center justify-between text-[13px]">
+                <span className="flex items-center gap-1.5 text-label">
+                  Notion
+                  {configured ? (
+                    <span className="text-label-secondary">
+                      <span className="text-[#30d158]">✓</span> Connected
+                    </span>
+                  ) : (
+                    <span className="text-label-secondary">Not connected</span>
+                  )}
                 </span>
                 <button
                   onClick={() => setView('wizard')}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-[13px] text-accent hover:underline"
                 >
                   {configured ? 'Reconnect' : 'Connect'}
                 </button>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  Discord {cfg.discordWebhookUrl ? '✓ connected' : '✗ not connected'}
+              <div className="flex items-center justify-between text-[13px]">
+                <span className="flex items-center gap-1.5 text-label">
+                  Discord
+                  {cfg.discordWebhookUrl ? (
+                    <span className="text-label-secondary">
+                      <span className="text-[#30d158]">✓</span> Connected
+                    </span>
+                  ) : (
+                    <span className="text-label-secondary">Not connected</span>
+                  )}
                 </span>
                 <button
                   onClick={() => setView('discord')}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-[13px] text-accent hover:underline"
                 >
                   {cfg.discordWebhookUrl ? 'Reconnect' : 'Connect'}
                 </button>
