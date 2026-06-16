@@ -10,6 +10,7 @@ export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
   const [secret, setSecret] = useState('')
   const [tasksUrl, setTasksUrl] = useState('')
   const [sessionsUrl, setSessionsUrl] = useState('')
+  const [planningUrl, setPlanningUrl] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<string | null>(null)
 
@@ -30,6 +31,9 @@ export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
       tasksDbId: tasksUrl.trim(),
       sessionsDbId: sessionsUrl.trim(),
     })
+    if (planningUrl.trim()) {
+      await window.api.setPlanningDb(planningUrl.trim())
+    }
     onComplete()
   }
 
@@ -69,6 +73,16 @@ export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
           type="text"
           value={sessionsUrl}
           onChange={(e) => setSessionsUrl(e.target.value)}
+          placeholder="https://notion.so/… or 32-char ID"
+          className="rounded border px-2 py-1"
+        />
+      </label>
+      <label className="flex flex-col gap-1 text-sm">
+        DB Planning — URL or ID (optional)
+        <input
+          type="text"
+          value={planningUrl}
+          onChange={(e) => setPlanningUrl(e.target.value)}
           placeholder="https://notion.so/… or 32-char ID"
           className="rounded border px-2 py-1"
         />
