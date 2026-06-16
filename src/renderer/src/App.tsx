@@ -66,10 +66,6 @@ export default function App(): React.JSX.Element {
   const isActive = snap?.state === 'focus' || snap?.state === 'paused'
 
   const stats = useStats()
-  const [pendingSync, setPendingSync] = useState(0)
-  useEffect(() => {
-    window.api.getPendingSync().then(setPendingSync)
-  }, [stats])
 
   const [planningMode, setPlanningMode] = useState<'idle' | 'in_progress' | 'syncing' | 'done'>(
     'idle'
@@ -240,30 +236,15 @@ export default function App(): React.JSX.Element {
   return (
     <div className="flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-[11px] tabular-nums text-label-secondary">
-          {stats
-            ? `${stats.pomodorosToday} sessions · ${fmtFocus(stats.focusMsToday)}${stats.streak > 0 ? ` · ${stats.streak}-day streak` : ''}`
-            : '—'}
-        </span>
-        <div className="flex items-center gap-2">
-          {pendingSync > 0 && (
-            <span
-              className="text-[11px] text-label-tertiary"
-              title={`${pendingSync} session(s) pending sync`}
-            >
-              ●
-            </span>
-          )}
-          <button
-            onClick={() => setView('config')}
-            title="Settings"
-            aria-label="Settings"
-            className="text-label-secondary"
-          >
-            ⚙
-          </button>
-        </div>
+      <div className="flex items-center justify-end px-4 py-3">
+        <button
+          onClick={() => setView('config')}
+          title="Settings"
+          aria-label="Settings"
+          className="text-label-secondary"
+        >
+          ⚙
+        </button>
       </div>
       <div className="mx-4 border-t border-separator" />
 
@@ -304,6 +285,9 @@ export default function App(): React.JSX.Element {
                     {fmtFocus(stats.focusMsToday)} / {focusTimeGoalMins}m
                   </span>
                 </div>
+              )}
+              {stats.streak > 0 && (
+                <p className="mt-2 text-[11px] text-label-secondary">{stats.streak}-day streak</p>
               )}
             </div>
             <div className="mx-4 border-t border-separator" />
