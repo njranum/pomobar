@@ -333,7 +333,7 @@ export default function App(): React.JSX.Element {
             </div>
           )}
           {prompt !== null && (
-            <div className="flex flex-col gap-2 rounded border border-amber-300 bg-amber-50 p-3">
+            <div className="flex flex-col gap-2 rounded bg-gray-800 p-3 text-white">
               <p>Mark &quot;{prompt}&quot; complete?</p>
               <div className="flex gap-2">
                 <button
