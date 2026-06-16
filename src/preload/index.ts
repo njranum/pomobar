@@ -37,6 +37,9 @@ const api = {
   isConfigured: (): Promise<boolean> => ipcRenderer.invoke(IpcChannels.NotionIsConfigured),
   notionValidate: (secret: string, tasksDbId: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke(IpcChannels.NotionValidate, { secret, tasksDbId }),
+  getPlanningDb: (): Promise<string | null> => ipcRenderer.invoke(IpcChannels.PlanningDbGet),
+  setPlanningDb: (url: string): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke(IpcChannels.PlanningDbSet, url),
   notionSetup: (p: { secret: string; tasksDbId: string; sessionsDbId: string }): Promise<void> =>
     ipcRenderer.invoke(IpcChannels.NotionSetup, p),
   fetchTasks: (): Promise<PickerTask[]> => ipcRenderer.invoke(IpcChannels.TasksFetch),

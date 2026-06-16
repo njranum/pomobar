@@ -6,6 +6,7 @@ import { computeStats, buildRecord, writeSession } from './sessions'
 import type { PomodoroConfig, TaskRef } from '@/shared/types'
 import { validateConfig } from '@/shared/validateConfig'
 import {
+  getNotion,
   validateNotionSecret,
   extractNotionId,
   resetNotion,
@@ -146,6 +147,20 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle(IpcChannels.SyncPendingGet, () => store.get('syncQueue').length)
   ipcMain.handle(IpcChannels.DailyGoalsGet, () => store.get('dailyGoals'))
+  ipcMain.handle(IpcChannels.PlanningDbGet, () => store.get('planningDbId'))
+  ipcMain.handle(IpcChannels.PlanningDbSet, async (_e, url: string) => {
+    const pageUUID = extractNotionId(url)
+    if (!pageUUID) return { ok: false, error: 'Invalid Notion URL' }
+    const c = getNotion()
+    if (!c) return { ok: false, error: 'Notion not configured' }
+    try {
+      await c.databases.retrieve({ database_id: pageUUID })
+      store.set('planningDbId', pageUUID)
+      return { ok: true }
+    } catch {
+      return { ok: false, error: 'Could not access database — check sharing with integration' }
+    }
+  })
   ipcMain.handle(
     IpcChannels.NotionSetup,
     async (_e, p: { secret: string; tasksDbId: string; sessionsDbId: string }) => {

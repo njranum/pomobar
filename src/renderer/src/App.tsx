@@ -78,6 +78,26 @@ export default function App(): React.JSX.Element {
     }
   }
 
+  const [planningUrl, setPlanningUrl] = useState('')
+  const [planningError, setPlanningError] = useState<string | null>(null)
+  const [planningIsSet, setPlanningIsSet] = useState(false)
+
+  useEffect(() => {
+    if (view === 'config') {
+      window.api.getPlanningDb().then((id) => setPlanningIsSet(!!id))
+    }
+  }, [view])
+
+  const handleSavePlanningDb = async (): Promise<void> => {
+    const result = await window.api.setPlanningDb(planningUrl)
+    if (result.ok) {
+      setPlanningIsSet(true)
+      setPlanningError(null)
+    } else {
+      setPlanningError(result.error ?? 'Unknown error')
+    }
+  }
+
   // discord setup view
   if (view === 'discord') {
     return (
@@ -183,6 +203,26 @@ export default function App(): React.JSX.Element {
                   className="text-sm text-blue-600 hover:underline"
                 >
                   {cfg.discordWebhookUrl ? 'Reconnect' : 'Connect'}
+                </button>
+              </div>
+              <div className="flex flex-col gap-1 border-t pt-2">
+                <span className="text-sm text-gray-600">
+                  Planning DB {planningIsSet ? '✓ connected' : '✗ not connected'}
+                </span>
+                <input
+                  type="text"
+                  value={planningUrl}
+                  onChange={(e) => setPlanningUrl(e.target.value)}
+                  placeholder="Notion Planning DB URL"
+                  className="rounded border px-2 py-1 text-sm"
+                />
+                {planningError && <p className="text-xs text-red-600">{planningError}</p>}
+                <button
+                  onClick={handleSavePlanningDb}
+                  disabled={!planningUrl}
+                  className="rounded bg-blue-600 px-3 py-1 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Save Planning DB
                 </button>
               </div>
             </div>
