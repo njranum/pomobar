@@ -51,3 +51,6 @@ jobs:
 
       - name: Check TypeScript Types
         run: npm run typecheck
+
+      - name: Run Tests
+        run: npm test
