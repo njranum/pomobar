@@ -2,14 +2,16 @@ import { useState } from 'react'
 
 interface Props {
   onComplete: () => void
+  onCancel?: () => void
 }
 
 type Status = 'idle' | 'validating' | 'error'
 
-export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
+export default function SetupWizard({ onComplete, onCancel }: Props): React.JSX.Element {
   const [secret, setSecret] = useState('')
   const [tasksUrl, setTasksUrl] = useState('')
   const [sessionsUrl, setSessionsUrl] = useState('')
+  const [planningUrl, setPlanningUrl] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<string | null>(null)
 
@@ -30,11 +32,19 @@ export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
       tasksDbId: tasksUrl.trim(),
       sessionsDbId: sessionsUrl.trim(),
     })
+    if (planningUrl.trim()) {
+      await window.api.setPlanningDb(planningUrl.trim())
+    }
     onComplete()
   }
 
   return (
     <div className="flex flex-col gap-3 p-4">
+      {onCancel && (
+        <button onClick={onCancel} className="self-start text-sm text-blue-600">
+          ← Back
+        </button>
+      )}
       <h2 className="text-lg font-semibold">Connect Notion</h2>
       <p className="text-sm text-gray-600">
         Create an internal integration at{' '}
@@ -69,6 +79,16 @@ export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
           type="text"
           value={sessionsUrl}
           onChange={(e) => setSessionsUrl(e.target.value)}
+          placeholder="https://notion.so/… or 32-char ID"
+          className="rounded border px-2 py-1"
+        />
+      </label>
+      <label className="flex flex-col gap-1 text-sm">
+        DB Planning — URL or ID (optional)
+        <input
+          type="text"
+          value={planningUrl}
+          onChange={(e) => setPlanningUrl(e.target.value)}
           placeholder="https://notion.so/… or 32-char ID"
           className="rounded border px-2 py-1"
         />

@@ -43,7 +43,7 @@ export function registerIpcHandlers(): void {
   })
   ipcMain.handle(IpcChannels.NeedsPlanning, () => needsPlanning())
   ipcMain.handle(IpcChannels.PlanningSync, async () => {
-    const rowId = activePlanningRowId
+    const rowId = activePlanningRowId ?? store.get('todayPlanningRowId')
     if (!rowId) return { pomodoroGoal: null, focusTimeGoalMins: null, tasks: [] }
     const { focusTimeGoalMins } = await readPlanningGoals(rowId)
     const config = store.get('config')
@@ -59,6 +59,7 @@ export function registerIpcHandlers(): void {
       ...scheduledTasks.filter((t) => !planningTasks.find((p) => p.id === t.id)),
     ]
     store.set('taskCache', merged)
+    store.set('dailyGoals', { pomodoroGoal, focusTimeGoalMins })
     activePlanningRowId = null
     return { pomodoroGoal, focusTimeGoalMins, tasks: merged }
   })
