@@ -1,10 +1,13 @@
 {
   "name": "pomobar",
-  "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "version": "3.0.0",
+  "description": "Electron pomodoro timer with Notion integration for task tracking.",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "nicholasr",
+  "homepage": "https://github.com/njranum/pomobar",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -26,8 +29,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@notionhq/client": "^5.22.0",
-    "electron-store": "^8.2.0",
-    "fswatch": "^0.1.4"
+    "electron-store": "^8.2.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
