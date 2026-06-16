@@ -51,13 +51,12 @@ export default function App(): React.JSX.Element {
   const [focusTimeGoalMins, setFocusTimeGoalMins] = useState<number | null>(null)
 
   useEffect(() => {
-    window.api.needsPlanning().then((needs) => {
+    window.api.needsPlanning().then(async (needs) => {
       if (!needs) {
-        window.api.getDailyGoals().then((goals) => {
-          setPomodoroGoal(goals.pomodoroGoal)
-          setFocusTimeGoalMins(goals.focusTimeGoalMins)
-          setPlanningMode('done')
-        })
+        const [goals] = await Promise.all([window.api.getDailyGoals(), window.api.syncPlanning()])
+        setPomodoroGoal(goals.pomodoroGoal)
+        setFocusTimeGoalMins(goals.focusTimeGoalMins)
+        setPlanningMode('done')
       }
     })
   }, [])
