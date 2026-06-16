@@ -5,7 +5,7 @@ name: Pre-Merge Validation
 # even when the real pipeline is correctly skipped.
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
     paths:
       - '**.md'
       - '.gitignore'

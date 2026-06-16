@@ -3,6 +3,6 @@ semi: false
 printWidth: 100
 trailingComma: es5
 overrides:
-  - files: ["tsconfig*.json"]
+  - files: ['tsconfig*.json']
     options:
       parser: jsonc

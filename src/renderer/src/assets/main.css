@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import './base.css';
 @source "../**/*.{tsx,ts,html}";
 
@@ -14,13 +14,28 @@
   --color-separator: rgba(255, 255, 255, 0.1);
   --color-track: rgba(255, 255, 255, 0.12);
 
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
 }
 
 body {
   overflow: hidden;
   user-select: none;
+}
+
+:focus {
+  outline: none;
+}
+
+/* Thin, quiet scrollbar for capped scroll regions (e.g. the task list) */
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 code {
