@@ -293,7 +293,7 @@ export default function App(): React.JSX.Element {
             </div>
           )}
           {/* Task picker + start */}
-          {!isActive && (
+          {!isActive && prompt === null && (
             <div className="flex flex-col gap-2">
               <TaskPicker
                 planningMode={planningMode}
