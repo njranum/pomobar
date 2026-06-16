@@ -316,22 +316,19 @@ export default function App(): React.JSX.Element {
 
           {/* Active-session controls */}
           {isActive && (
-            <div className="flex gap-2 rounded border border-gray-200 p-3">
+            <div className="flex flex-col gap-2 rounded border border-gray-200 p-3">
               <button
                 onClick={() => (snap?.isPause ? resume() : pause())}
-                className="flex-1 rounded bg-gray-200 px-3 py-1"
+                className="rounded bg-gray-200 px-3 py-1"
               >
                 {snap?.isPause ? 'Resume' : 'Pause'}
               </button>
-              <button
-                onClick={() => cancel()}
-                className="flex-1 rounded bg-red-600 px-3 py-1 text-white"
-              >
+              <button onClick={() => cancel()} className="rounded bg-red-600 px-3 py-1 text-white">
                 Cancel
               </button>
               <button
                 onClick={() => endEarly()}
-                className="flex-1 rounded bg-green-600 px-3 py-1 text-white"
+                className="rounded bg-green-600 px-3 py-1 text-white"
               >
                 End early + complete
               </button>
