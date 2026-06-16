@@ -65,17 +65,19 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
   const taskButton = (t: PickerTask, showDate: boolean): React.JSX.Element => (
     <button
       onClick={() => onSelect(selected?.id === t.id ? null : t)}
-      className={`flex w-full items-center justify-between gap-2 rounded border px-2 py-1.5 text-left text-sm ${
-        selected?.id === t.id
-          ? 'border-blue-600 bg-blue-600 text-white'
-          : 'border-gray-200 hover:border-gray-300'
+      className={`flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] ${
+        selected?.id === t.id ? 'bg-accent text-white' : 'text-label hover:bg-fill'
       }`}
     >
       <span className="truncate">{t.title}</span>
       {showDate && t.scheduledDate && (
         <span
-          className={`shrink-0 text-xs ${
-            selected?.id === t.id ? 'text-white/70' : t.overdue ? 'text-red-500' : 'text-gray-400'
+          className={`shrink-0 text-[11px] tabular-nums ${
+            selected?.id === t.id
+              ? 'text-white/70'
+              : t.overdue
+                ? 'text-danger'
+                : 'text-label-secondary'
           }`}
         >
           {fmtDate(t.scheduledDate)}
@@ -88,27 +90,31 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
     <div className="flex min-h-0 flex-1 flex-col gap-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <span className="text-xs text-gray-500">Select a task</span>
-          {stale && <span className="text-xs text-gray-300">↻</span>}
+          <span className="text-[11px] text-label-secondary">Select a task</span>
+          {stale && <span className="text-[11px] text-label-tertiary">↻</span>}
         </div>
-        <button onClick={handleRefresh} className="text-xs text-blue-600 hover:underline">
+        <button onClick={handleRefresh} className="text-[11px] text-accent hover:underline">
           Refresh
         </button>
       </div>
       {isEmpty ? (
-        <p className="text-sm text-gray-400">
+        <p className="text-[13px] text-label-tertiary">
           {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
         </p>
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+        <ul className="flex max-h-72 min-h-0 flex-col gap-0.5 overflow-y-auto">
           {planningTasks.length > 0 && (
-            <li className="px-1 pt-1 text-xs font-medium text-gray-400">Today&apos;s Plan</li>
+            <li className="px-1 pt-1 text-[11px] font-medium uppercase tracking-[0.4px] text-label-tertiary">
+              Today&apos;s plan
+            </li>
           )}
           {planningTasks.map((t) => (
             <li key={t.id}>{taskButton(t, false)}</li>
           ))}
           {planningTasks.length > 0 && scheduledTasks.length > 0 && (
-            <li className="px-1 pt-1 text-xs font-medium text-gray-400">Scheduled</li>
+            <li className="px-1 pt-1 text-[11px] font-medium uppercase tracking-[0.4px] text-label-tertiary">
+              Scheduled
+            </li>
           )}
           {scheduledTasks.map((t) => (
             <li key={t.id}>{taskButton(t, true)}</li>
