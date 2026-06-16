@@ -14,5 +14,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    // Pin the timezone so the date logic in sessions.ts (the 4am day-rollover
+    // in computeStreak) is deterministic across developer machines and CI.
+    env: { TZ: 'UTC' },
   },
 })
