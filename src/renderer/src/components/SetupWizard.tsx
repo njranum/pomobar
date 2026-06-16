@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SECTION_HEADER, BODY, SECONDARY, LINK, BTN_PRIMARY, TEXT_FIELD } from '../styles'
 
 interface Props {
   onComplete: () => void
@@ -41,65 +42,61 @@ export default function SetupWizard({ onComplete, onCancel }: Props): React.JSX.
   return (
     <div className="flex flex-col gap-3 p-4">
       {onCancel && (
-        <button onClick={onCancel} className="self-start text-sm text-blue-600">
+        <button onClick={onCancel} className={`self-start ${LINK}`}>
           ← Back
         </button>
       )}
-      <h2 className="text-lg font-semibold">Connect Notion</h2>
-      <p className="text-sm text-gray-600">
+      <h2 className={SECTION_HEADER}>Connect Notion</h2>
+      <p className={SECONDARY}>
         Create an internal integration at{' '}
-        <span className="font-mono text-xs">notion.so/my-integrations</span>, share{' '}
-        <span className="font-mono text-xs">DB Focus Tasks</span> and{' '}
-        <span className="font-mono text-xs">DB Pomodoro Sessions</span> with it, then paste the
-        details below.
+        <span className="font-mono">notion.so/my-integrations</span>, share{' '}
+        <span className="font-mono">DB Focus Tasks</span> and{' '}
+        <span className="font-mono">DB Pomodoro Sessions</span> with it, then paste the details
+        below.
       </p>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={`flex flex-col gap-1 ${BODY}`}>
         Integration secret
         <input
           type="password"
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
           placeholder="ntn_…"
-          className="rounded border px-2 py-1"
+          className={TEXT_FIELD}
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={`flex flex-col gap-1 ${BODY}`}>
         DB Focus Tasks — URL or ID
         <input
           type="text"
           value={tasksUrl}
           onChange={(e) => setTasksUrl(e.target.value)}
           placeholder="https://notion.so/… or 32-char ID"
-          className="rounded border px-2 py-1"
+          className={TEXT_FIELD}
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={`flex flex-col gap-1 ${BODY}`}>
         DB Pomodoro Sessions — URL or ID
         <input
           type="text"
           value={sessionsUrl}
           onChange={(e) => setSessionsUrl(e.target.value)}
           placeholder="https://notion.so/… or 32-char ID"
-          className="rounded border px-2 py-1"
+          className={TEXT_FIELD}
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={`flex flex-col gap-1 ${BODY}`}>
         DB Planning — URL or ID (optional)
         <input
           type="text"
           value={planningUrl}
           onChange={(e) => setPlanningUrl(e.target.value)}
           placeholder="https://notion.so/… or 32-char ID"
-          className="rounded border px-2 py-1"
+          className={TEXT_FIELD}
         />
       </label>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button
-        disabled={!canSubmit}
-        onClick={handleSubmit}
-        className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        {status === 'validating' ? 'Validating…' : 'Validate & Save'}
+      {error && <p className="text-[11px] text-danger">{error}</p>}
+      <button disabled={!canSubmit} onClick={handleSubmit} className={BTN_PRIMARY}>
+        {status === 'validating' ? 'Validating…' : 'Validate & save'}
       </button>
     </div>
   )
