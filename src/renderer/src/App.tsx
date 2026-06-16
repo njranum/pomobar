@@ -357,14 +357,11 @@ export default function App(): React.JSX.Element {
             </div>
           )}
 
-          <button
-            onClick={handlePlanMyDay}
-            disabled={planningMode !== 'idle'}
-            title={planningMode === 'done' ? 'Planning complete for today' : undefined}
-            className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Plan My Day
-          </button>
+          {planningMode === 'idle' && !isActive && (
+            <button onClick={handlePlanMyDay} className="rounded bg-blue-600 px-3 py-1 text-white">
+              Plan My Day
+            </button>
+          )}
         </div>
       )}
     </div>
