@@ -105,13 +105,13 @@ const TaskPicker = forwardRef<TaskPickerHandle, Props>(function TaskPicker(
       ) : (
         <ul className="scroll-thin flex max-h-[260px] min-h-0 flex-col gap-0.5 overflow-y-auto">
           {planningTasks.length > 0 && (
-            <li className={`px-1 pt-1 ${SECTION_HEADER}`}>Today&apos;s plan</li>
+            <li className={`px-1 pb-1 ${SECTION_HEADER}`}>Today&apos;s plan</li>
           )}
           {planningTasks.map((t) => (
             <li key={t.id}>{taskButton(t, false)}</li>
           ))}
           {planningTasks.length > 0 && scheduledTasks.length > 0 && (
-            <li className={`px-1 pt-1 ${SECTION_HEADER}`}>Scheduled</li>
+            <li className={`px-1 pb-1 pt-3 ${SECTION_HEADER}`}>Scheduled</li>
           )}
           {scheduledTasks.map((t) => (
             <li key={t.id}>{taskButton(t, true)}</li>
