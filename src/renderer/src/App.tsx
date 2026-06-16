@@ -21,6 +21,10 @@ export default function App(): React.JSX.Element {
   const [configured, setConfigured] = useState(true)
 
   useEffect(() => {
+    ;(document.activeElement as HTMLElement | null)?.blur()
+  }, [])
+
+  useEffect(() => {
     window.api.getConfig().then(setCfg)
     window.api.isConfigured().then((ok) => {
       setConfigured(ok)
