@@ -2,7 +2,7 @@ name: Pre-Merge Validation
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
     paths-ignore:
       - '**.md'
       - '.gitignore'
@@ -10,7 +10,7 @@ on:
       - '.vscode/**'
       - 'resources/**/*.png'
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
     paths-ignore:
       - '**.md'
       - '.gitignore'

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import './base.css';
 @source "../**/*.{tsx,ts,html}";
 
@@ -14,8 +14,7 @@
   --color-separator: rgba(255, 255, 255, 0.1);
   --color-track: rgba(255, 255, 255, 0.12);
 
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
 }
 
 body {

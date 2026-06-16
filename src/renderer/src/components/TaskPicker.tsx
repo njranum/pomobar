@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import type { PickerTask } from '@/shared/types'
+import { SECTION_HEADER, BODY } from '../styles'
+
+export interface TaskPickerHandle {
+  refresh: () => void
+}
 
 interface Props {
   planningMode: 'idle' | 'in_progress' | 'syncing' | 'done'
   selected: PickerTask | null
   onSelect: (task: PickerTask | null) => void
+  onStaleChange?: (stale: boolean) => void
 }
 
 const fmtDate = (iso: string): string => {
@@ -26,21 +32,34 @@ const fmtDate = (iso: string): string => {
   return `${months[Number(m) - 1]} ${Number(d)}`
 }
 
-export default function TaskPicker({ planningMode, selected, onSelect }: Props): React.JSX.Element {
+const TaskPicker = forwardRef<TaskPickerHandle, Props>(function TaskPicker(
+  { planningMode, selected, onSelect, onStaleChange },
+  ref
+) {
   const [tasks, setTasks] = useState<PickerTask[]>([])
   const [stale, setStale] = useState(true)
   const [planningTasks, setPlanningTasks] = useState<PickerTask[]>([])
 
-  useEffect(() => {
-    window.api.getTaskCache().then(setTasks)
+  const loadTasks = useCallback((): void => {
+    setStale(true)
+    onStaleChange?.(true)
     window.api
       .fetchTasks()
       .then((fresh) => {
         setTasks(fresh)
         setStale(false)
+        onStaleChange?.(false)
       })
-      .catch(() => setStale(false))
-  }, [])
+      .catch(() => {
+        setStale(false)
+        onStaleChange?.(false)
+      })
+  }, [onStaleChange])
+
+  useEffect(() => {
+    window.api.getTaskCache().then(setTasks)
+    loadTasks()
+  }, [loadTasks])
 
   useEffect(() => {
     if (planningMode === 'done') {
@@ -48,16 +67,7 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
     }
   }, [planningMode])
 
-  const handleRefresh = (): void => {
-    setStale(true)
-    window.api
-      .fetchTasks()
-      .then((fresh) => {
-        setTasks(fresh)
-        setStale(false)
-      })
-      .catch(() => setStale(false))
-  }
+  useImperativeHandle(ref, () => ({ refresh: loadTasks }), [loadTasks])
 
   const scheduledTasks = tasks.filter((t) => !t.fromPlanning)
   const isEmpty = planningTasks.length === 0 && scheduledTasks.length === 0
@@ -65,8 +75,8 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
   const taskButton = (t: PickerTask, showDate: boolean): React.JSX.Element => (
     <button
       onClick={() => onSelect(selected?.id === t.id ? null : t)}
-      className={`flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] ${
-        selected?.id === t.id ? 'bg-accent text-white' : 'text-label hover:bg-fill'
+      className={`flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left ${BODY} ${
+        selected?.id === t.id ? 'bg-accent text-white' : 'hover:bg-fill'
       }`}
     >
       <span className="truncate">{t.title}</span>
@@ -88,15 +98,6 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-[11px] text-label-secondary">Select a task</span>
-          {stale && <span className="text-[11px] text-label-tertiary">↻</span>}
-        </div>
-        <button onClick={handleRefresh} className="text-[11px] text-accent hover:underline">
-          Refresh
-        </button>
-      </div>
       {isEmpty ? (
         <p className="text-[13px] text-label-tertiary">
           {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
@@ -104,17 +105,13 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
       ) : (
         <ul className="flex max-h-72 min-h-0 flex-col gap-0.5 overflow-y-auto">
           {planningTasks.length > 0 && (
-            <li className="px-1 pt-1 text-[11px] font-medium uppercase tracking-[0.4px] text-label-tertiary">
-              Today&apos;s plan
-            </li>
+            <li className={`px-1 pt-1 ${SECTION_HEADER}`}>Today&apos;s plan</li>
           )}
           {planningTasks.map((t) => (
             <li key={t.id}>{taskButton(t, false)}</li>
           ))}
           {planningTasks.length > 0 && scheduledTasks.length > 0 && (
-            <li className="px-1 pt-1 text-[11px] font-medium uppercase tracking-[0.4px] text-label-tertiary">
-              Scheduled
-            </li>
+            <li className={`px-1 pt-1 ${SECTION_HEADER}`}>Scheduled</li>
           )}
           {scheduledTasks.map((t) => (
             <li key={t.id}>{taskButton(t, true)}</li>
@@ -123,4 +120,6 @@ export default function TaskPicker({ planningMode, selected, onSelect }: Props):
       )}
     </div>
   )
-}
+})
+
+export default TaskPicker
