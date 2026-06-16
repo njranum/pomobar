@@ -295,23 +295,24 @@ export default function App(): React.JSX.Element {
             </div>
           )}
           {/* Task picker + start */}
-          <div className="flex flex-col gap-2">
-            <TaskPicker
-              disabled={isActive}
-              planningMode={planningMode}
-              selected={selectedTask}
-              onSelect={setSelectedTask}
-            />
-            <button
-              disabled={!canStart}
-              onClick={() => {
-                if (selectedTask) startFocus({ id: selectedTask.id, title: selectedTask.title })
-              }}
-              className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Start Session
-            </button>
-          </div>
+          {!isActive && (
+            <div className="flex flex-col gap-2">
+              <TaskPicker
+                planningMode={planningMode}
+                selected={selectedTask}
+                onSelect={setSelectedTask}
+              />
+              <button
+                disabled={!canStart}
+                onClick={() => {
+                  if (selectedTask) startFocus({ id: selectedTask.id, title: selectedTask.title })
+                }}
+                className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Start Session
+              </button>
+            </div>
+          )}
 
           {/* Active-session controls */}
           {isActive && (
