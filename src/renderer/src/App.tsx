@@ -252,7 +252,7 @@ export default function App(): React.JSX.Element {
     <div className="flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2">
-        <span className={SECTION_HEADER}>Pomo app</span>
+        <span className="text-[13px] font-medium text-label">Pomo app</span>
         <div className="flex items-center gap-3">
           {!isActive && prompt === null && planningMode === 'done' && (
             <button
@@ -321,9 +321,11 @@ export default function App(): React.JSX.Element {
                   </span>
                 </div>
               )}
-              {stats.streak > 0 && <p className={`mt-2 ${SECONDARY}`}>{stats.streak}-day streak</p>}
+              {stats.streak > 0 && (
+                <p className={`mt-0.5 leading-tight ${SECONDARY}`}>{stats.streak}-day streak</p>
+              )}
             </div>
-            <div className="mx-4 border-t border-separator" />
+            <div className="border-t border-separator" />
           </>
         )}
 
