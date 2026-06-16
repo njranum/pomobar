@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, Menu, type NativeImage, dialog } from 'electron'
+import { app, Tray, nativeImage, Menu, type NativeImage, dialog, nativeTheme } from 'electron'
 import { join } from 'path'
 import { createPopover } from './popover'
 import { registerIpcHandlers } from './ipc'
@@ -67,6 +67,9 @@ if (!app.requestSingleInstanceLock()) {
   }
   //
   app.whenReady().then(() => {
+    // Force dark appearance so the popover always uses the dark frosted material
+    nativeTheme.themeSource = 'dark'
+
     // test ipc connection
     registerIpcHandlers()
     registerNotifications()
