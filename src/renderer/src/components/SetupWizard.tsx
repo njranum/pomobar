@@ -2,11 +2,12 @@ import { useState } from 'react'
 
 interface Props {
   onComplete: () => void
+  onCancel?: () => void
 }
 
 type Status = 'idle' | 'validating' | 'error'
 
-export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
+export default function SetupWizard({ onComplete, onCancel }: Props): React.JSX.Element {
   const [secret, setSecret] = useState('')
   const [tasksUrl, setTasksUrl] = useState('')
   const [sessionsUrl, setSessionsUrl] = useState('')
@@ -39,6 +40,11 @@ export default function SetupWizard({ onComplete }: Props): React.JSX.Element {
 
   return (
     <div className="flex flex-col gap-3 p-4">
+      {onCancel && (
+        <button onClick={onCancel} className="self-start text-sm text-blue-600">
+          ← Back
+        </button>
+      )}
       <h2 className="text-lg font-semibold">Connect Notion</h2>
       <p className="text-sm text-gray-600">
         Create an internal integration at{' '}
