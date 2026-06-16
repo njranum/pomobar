@@ -200,76 +200,92 @@ export default function App(): React.JSX.Element {
     <div className="flex h-screen flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <span className="font-semibold text-gray-800">PomoApp</span>
+        <span className="text-[11px] tabular-nums text-label-secondary">
+          {stats
+            ? `${stats.pomodorosToday} sessions · ${fmtFocus(stats.focusMsToday)}${stats.streak > 0 ? ` · ${stats.streak}-day streak` : ''}`
+            : '—'}
+        </span>
         <div className="flex items-center gap-2">
           {pendingSync > 0 && (
             <span
-              className="text-xs text-gray-300"
+              className="text-[11px] text-label-tertiary"
               title={`${pendingSync} session(s) pending sync`}
             >
               ●
             </span>
           )}
-          <button onClick={() => setView('config')} title="Settings" aria-label="Settings">
+          <button
+            onClick={() => setView('config')}
+            title="Settings"
+            aria-label="Settings"
+            className="text-label-secondary"
+          >
             ⚙
           </button>
         </div>
       </div>
-      <div className="mx-4 border-t border-gray-300 opacity-25" />
+      <div className="mx-4 border-t border-separator" />
 
-      {/* Stats */}
-      <div className="px-4 py-2">
-        <p className="text-sm text-gray-500">
-          {stats
-            ? `${stats.pomodorosToday} pomodoros | ${fmtFocus(stats.focusMsToday)}${stats.streak > 0 ? ` | ${stats.streak}d streak` : ''}`
-            : '- pomodoros | -'}
-        </p>
-        {planningMode === 'done' && pomodoroGoal !== null && stats && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
-            <span className="w-20 shrink-0">Pomodoros</span>
-            <progress
-              className="flex-1"
-              value={Math.min(stats.pomodorosToday, pomodoroGoal)}
-              max={pomodoroGoal}
-            />
-            <span>
-              {stats.pomodorosToday}&nbsp;/&nbsp;{pomodoroGoal}
-            </span>
-          </div>
+      {/* Goals */}
+      {planningMode === 'done' &&
+        stats &&
+        (pomodoroGoal !== null || focusTimeGoalMins !== null) && (
+          <>
+            <div className="px-4 py-2">
+              {pomodoroGoal !== null && (
+                <div className="flex items-center gap-2 text-[11px] text-label-secondary">
+                  <span className="w-20 shrink-0">Pomodoros</span>
+                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-track">
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{
+                        width: `${Math.min(100, (stats.pomodorosToday / pomodoroGoal) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="tabular-nums">
+                    {stats.pomodorosToday} / {pomodoroGoal}
+                  </span>
+                </div>
+              )}
+              {focusTimeGoalMins !== null && (
+                <div className="mt-1 flex items-center gap-2 text-[11px] text-label-secondary">
+                  <span className="w-20 shrink-0">Focus time</span>
+                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-track">
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{
+                        width: `${Math.min(100, (stats.focusMsToday / (focusTimeGoalMins * 60_000)) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="tabular-nums">
+                    {fmtFocus(stats.focusMsToday)} / {focusTimeGoalMins}m
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="mx-4 border-t border-separator" />
+          </>
         )}
-        {planningMode === 'done' && focusTimeGoalMins !== null && stats && (
-          <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
-            <span className="w-20 shrink-0">Focus Time</span>
-            <progress
-              className="flex-1"
-              value={Math.min(stats.focusMsToday, focusTimeGoalMins * 60_000)}
-              max={focusTimeGoalMins * 60_000}
-            />
-            <span>
-              {fmtFocus(stats.focusMsToday)}&nbsp;/&nbsp;{focusTimeGoalMins}m
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="mx-4 border-t border-gray-300 opacity-25" />
 
       {/* Scrollable content */}
       <div className="flex flex-1 flex-col overflow-hidden px-4 py-3">
         {planningMode === 'in_progress' && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-gray-600">
+            <p className="text-[13px] text-label-secondary">
               Fill in your plan in Notion, then click Complete.
             </p>
             <button
               onClick={handleCompletePlanning}
-              className="rounded bg-blue-600 px-3 py-1 text-white"
+              className="rounded-md bg-accent px-3 py-2 text-[13px] font-medium text-white"
             >
               Complete Planning
             </button>
           </div>
         )}
         {planningMode === 'syncing' && (
-          <p className="text-sm text-gray-500">Syncing from Notion…</p>
+          <p className="text-[13px] text-label-secondary">Syncing from Notion…</p>
         )}
         {(planningMode === 'idle' || planningMode === 'done') && (
           <>
@@ -334,7 +350,7 @@ export default function App(): React.JSX.Element {
 
             {/* Planning needed */}
             {planningMode === 'idle' && !isActive && (
-              <p className="text-center text-xs text-gray-400">
+              <p className="text-center text-[11px] text-label-tertiary">
                 Plan your day before starting focus tasks.
               </p>
             )}
@@ -345,12 +361,12 @@ export default function App(): React.JSX.Element {
       {/* Bottom action */}
       {!isActive && prompt === null && (planningMode === 'idle' || planningMode === 'done') && (
         <>
-          <div className="mx-4 border-t border-gray-300 opacity-25" />
+          <div className="mx-4 border-t border-separator" />
           <div className="px-4 py-3">
             {planningMode === 'idle' ? (
               <button
                 onClick={handlePlanMyDay}
-                className="w-full rounded bg-blue-600 px-3 py-2 text-white"
+                className="w-full rounded-md bg-accent px-3 py-2 text-[13px] font-medium text-white"
               >
                 Plan My Day
               </button>
@@ -360,7 +376,7 @@ export default function App(): React.JSX.Element {
                 onClick={() => {
                   if (selectedTask) startFocus({ id: selectedTask.id, title: selectedTask.title })
                 }}
-                className="w-full rounded bg-blue-600 px-3 py-2 text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="w-full rounded-md bg-accent px-3 py-2 text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Start Session
               </button>
