@@ -52,8 +52,6 @@ class Timer extends EventEmitter {
       if (wasLong) this.cyclePosition = 1
     }
 
-    // dev aid: trace focus starts while testing
-    // console.info(`[timer] startFocus — task="${task.title}" cyclePosition=${this.cyclePosition}`)
     const { focusMinutes } = store.get('config')
     this.begin('focus', focusMinutes, task.title, task.id)
     this.state = 'focus'
@@ -63,8 +61,6 @@ class Timer extends EventEmitter {
 
   pause(): void {
     if (this.state !== 'focus' || !this.session) return this.reject('pause', this.state)
-    // dev aid: trace pauses while testing
-    // console.info(`[timer] pause — remainingMs=${this.session.totalMs - this.elapsed()}`)
     this.session.accumulatedMs += Date.now() - this.session.startedAt
     this.state = 'paused'
     this.emitSnapshot()
@@ -73,8 +69,6 @@ class Timer extends EventEmitter {
 
   resume(): void {
     if (this.state !== 'paused' || !this.session) return this.reject('resume', this.state)
-    // dev aid: trace resumes while testing
-    // console.info(`[timer] resume — task="${this.session.task}"`)
     this.session.startedAt = Date.now()
     this.state = 'focus'
     this.emitSnapshot()
@@ -83,10 +77,6 @@ class Timer extends EventEmitter {
 
   cancel(): void {
     if (!this.isOneOf('focus', 'paused') || !this.session) return this.reject('cancel', this.state)
-    // dev aid: trace cancels while testing
-    // console.info(
-    //   `[timer] cancel — task="${this.session.task}" elapsedMs=${this.elapsed()} (not counted)`
-    // )
     this.endSession(false) // doesn't count as completed
     this.state = 'idle'
     this.session = null
@@ -97,10 +87,6 @@ class Timer extends EventEmitter {
   endEarly(): void {
     if (!this.isOneOf('focus', 'paused') || !this.session)
       return this.reject('endEarly', this.state)
-    // dev aid: trace early completions while testing
-    console.info(
-      `[timer] endEarly — task="${this.session.task}" cyclePosition=${this.cyclePosition} (counts as complete)`
-    )
     this.completeFocus() // end early counts as completed
   }
 

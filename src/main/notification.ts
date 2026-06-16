@@ -6,7 +6,6 @@ const label = (t: SessionType): string =>
   t === 'focus' ? 'Focus' : t === 'shortBreak' ? 'Short break' : 'Long break'
 
 const notify = (title: string, body: string): void => {
-  console.log('sending notification: ', title, body)
   if (Notification.isSupported()) new Notification({ title, body }).show()
 }
 
