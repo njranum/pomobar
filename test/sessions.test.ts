@@ -1,15 +1,19 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { SessionRecord, SessionType } from '@/shared/types'
 
-// sessions.ts imports the electron-store wrapper at module-eval; stub it so the
-// pure record-building helpers can be exercised without Electron app paths.
+// sessions.ts imports the electron-store wrapper at module-eval; stub it with a
+// mutable in-memory `sessions` array so the stats helpers can be exercised
+// without Electron app paths. `vi.hoisted` lets the factory close over it.
+const storeMock = vi.hoisted(() => ({ sessions: [] as unknown[] }))
+
 vi.mock('@/main/store', () => ({
   default: {
-    get: (): unknown => [],
+    get: (key: string): unknown => (key === 'sessions' ? storeMock.sessions : []),
     set: (): void => undefined,
   },
 }))
 
-import { buildRecord, sessionToNotionProps } from '@/main/sessions'
+import { buildRecord, computeStats, computeStreak, sessionToNotionProps } from '@/main/sessions'
 
 const baseInput = {
   type: 'focus' as const,
@@ -67,5 +71,109 @@ describe('sessionToNotionProps', () => {
 
     const breakProps = sessionToNotionProps(buildRecord({ ...baseInput, type: 'shortBreak' }))
     expect(breakProps['Task']).toBeUndefined()
+  })
+})
+
+// Build a minimal SessionRecord; only the fields the stats helpers read
+// (type, completed, date, startTime, durationMs) carry meaning here.
+let nextId = 0
+function record(
+  startTime: string,
+  opts: { type?: SessionType; completed?: boolean; durationMs?: number } = {}
+): SessionRecord {
+  return {
+    id: String(nextId++),
+    name: 'Session',
+    type: opts.type ?? 'focus',
+    date: startTime.slice(0, 10),
+    startTime,
+    endTime: startTime,
+    durationMs: opts.durationMs ?? 25 * 60_000,
+    cycleNumber: 1,
+    completed: opts.completed ?? true,
+    task: null,
+    taskId: null,
+    syncStatus: 'pending_sync',
+    notionPageId: null,
+  }
+}
+
+describe('computeStats', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    storeMock.sessions = []
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('counts only completed focus sessions dated today', () => {
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    storeMock.sessions = [
+      record('2026-06-16T09:00:00.000Z', { durationMs: 25 * 60_000 }), // counts
+      record('2026-06-16T10:00:00.000Z', { durationMs: 24 * 60_000 }), // counts
+      record('2026-06-16T11:00:00.000Z', { completed: false }), // not completed
+      record('2026-06-16T08:00:00.000Z', { type: 'shortBreak' }), // not focus
+      record('2026-06-15T09:00:00.000Z'), // not today
+    ]
+    const stats = computeStats()
+    expect(stats.pomodorosToday).toBe(2)
+    expect(stats.focusMsToday).toBe(49 * 60_000)
+  })
+
+  it('reports zeroes when there are no qualifying sessions', () => {
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    const stats = computeStats()
+    expect(stats.pomodorosToday).toBe(0)
+    expect(stats.focusMsToday).toBe(0)
+    expect(stats.streak).toBe(0)
+  })
+})
+
+describe('computeStreak', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('counts consecutive days up to the first gap', () => {
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    const streak = computeStreak([
+      record('2026-06-16T10:00:00.000Z'),
+      record('2026-06-15T10:00:00.000Z'),
+      record('2026-06-14T10:00:00.000Z'),
+      // gap on the 13th
+      record('2026-06-12T10:00:00.000Z'),
+    ])
+    expect(streak).toBe(3)
+  })
+
+  it('treats the day as not yet rolled over before 4am (cutoff on "now")', () => {
+    // It is 02:00, so "today" still counts as the previous calendar day.
+    vi.setSystemTime(new Date('2026-06-16T02:00:00.000Z'))
+    const streak = computeStreak([
+      record('2026-06-16T01:00:00.000Z'), // 1am — belongs to the 15th
+      record('2026-06-15T10:00:00.000Z'), // also the 15th
+      record('2026-06-14T10:00:00.000Z'),
+    ])
+    expect(streak).toBe(2)
+  })
+
+  it('attributes a pre-4am session to the previous day (cutoff on the record)', () => {
+    // Daytime now, but the only session was logged at 03:30 — which belongs to
+    // the previous day, so it does not establish a streak for today.
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    const streak = computeStreak([record('2026-06-16T03:30:00.000Z')])
+    expect(streak).toBe(0)
+  })
+
+  it('ignores non-focus and uncompleted sessions', () => {
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    const streak = computeStreak([
+      record('2026-06-16T10:00:00.000Z', { type: 'shortBreak' }),
+      record('2026-06-16T11:00:00.000Z', { completed: false }),
+    ])
+    expect(streak).toBe(0)
+  })
+
+  it('returns 0 for no sessions', () => {
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    expect(computeStreak([])).toBe(0)
   })
 })
