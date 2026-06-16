@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import type { PickerTask } from '@/shared/types'
 
 interface Props {
-  disabled: boolean
   planningMode: 'idle' | 'in_progress' | 'syncing' | 'done'
   selected: PickerTask | null
   onSelect: (task: PickerTask | null) => void
@@ -27,12 +26,7 @@ const fmtDate = (iso: string): string => {
   return `${months[Number(m) - 1]} ${Number(d)}`
 }
 
-export default function TaskPicker({
-  disabled,
-  planningMode,
-  selected,
-  onSelect,
-}: Props): React.JSX.Element {
+export default function TaskPicker({ planningMode, selected, onSelect }: Props): React.JSX.Element {
   const [tasks, setTasks] = useState<PickerTask[]>([])
   const [stale, setStale] = useState(true)
   const [planningTasks, setPlanningTasks] = useState<PickerTask[]>([])
@@ -70,13 +64,12 @@ export default function TaskPicker({
 
   const taskButton = (t: PickerTask, showDate: boolean): React.JSX.Element => (
     <button
-      disabled={disabled}
       onClick={() => onSelect(selected?.id === t.id ? null : t)}
       className={`flex w-full items-center justify-between gap-2 rounded border px-2 py-1.5 text-left text-sm ${
         selected?.id === t.id
           ? 'border-blue-600 bg-blue-600 text-white'
           : 'border-gray-200 hover:border-gray-300'
-      } disabled:cursor-not-allowed disabled:opacity-50`}
+      }`}
     >
       <span className="truncate">{t.title}</span>
       {showDate && t.scheduledDate && (
@@ -98,11 +91,7 @@ export default function TaskPicker({
           <span className="text-xs text-gray-500">Select a task</span>
           {stale && <span className="text-xs text-gray-300">↻</span>}
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={disabled}
-          className="text-xs text-blue-600 hover:underline disabled:opacity-40"
-        >
+        <button onClick={handleRefresh} className="text-xs text-blue-600 hover:underline">
           Refresh
         </button>
       </div>
