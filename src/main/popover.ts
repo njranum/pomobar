@@ -5,9 +5,10 @@ let popover: BrowserWindow | null = null
 
 export function createPopover(): BrowserWindow {
   popover = new BrowserWindow({
-    width: 320,
-    height: 480,
+    width: 300,
+    height: 200, // initial; resized to content height by the renderer (WindowSetHeight)
     show: false,
+    useContentSize: true,
     frame: false,
     resizable: false,
     movable: false,
@@ -15,6 +16,10 @@ export function createPopover(): BrowserWindow {
     maximizable: false,
     skipTaskbar: true,
     alwaysOnTop: true,
+    transparent: true,
+    backgroundColor: '#00000000',
+    vibrancy: 'popover',
+    visualEffectState: 'active',
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,

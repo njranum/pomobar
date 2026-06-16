@@ -2,13 +2,24 @@
 @import './base.css';
 @source "../**/*.{tsx,ts,html}";
 
+/* macOS dark-appearance design tokens (see docs/design-spec.md) */
+@theme {
+  --color-accent: #0a84ff;
+  --color-danger: #ff453a;
+  --color-label: rgba(255, 255, 255, 0.92);
+  --color-label-secondary: rgba(255, 255, 255, 0.55);
+  --color-label-tertiary: rgba(255, 255, 255, 0.3);
+  --color-fill: rgba(255, 255, 255, 0.08);
+  --color-fill-hover: rgba(255, 255, 255, 0.12);
+  --color-separator: rgba(255, 255, 255, 0.1);
+  --color-track: rgba(255, 255, 255, 0.12);
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+}
+
 body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  background-image: url('./wavy-lines.svg');
-  background-size: cover;
   user-select: none;
 }
 
@@ -29,11 +40,7 @@ code {
 }
 
 #root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin-bottom: 80px;
+  width: 100%;
 }
 
 .logo {
