@@ -103,7 +103,7 @@ const TaskPicker = forwardRef<TaskPickerHandle, Props>(function TaskPicker(
           {stale ? 'Loading tasks…' : 'No tasks scheduled — add one in Notion.'}
         </p>
       ) : (
-        <ul className="flex max-h-72 min-h-0 flex-col gap-0.5 overflow-y-auto">
+        <ul className="scroll-thin flex max-h-[260px] min-h-0 flex-col gap-0.5 overflow-y-auto">
           {planningTasks.length > 0 && (
             <li className={`px-1 pt-1 ${SECTION_HEADER}`}>Today&apos;s plan</li>
           )}

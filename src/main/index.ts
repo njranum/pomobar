@@ -116,13 +116,15 @@ if (!app.requestSingleInstanceLock()) {
     const popover = createPopover()
     setPopoverWindow(popover)
 
-    // Size the popover to the renderer's content height (top-anchored, grows downward)
-    const POPOVER_MAX_HEIGHT = 640
+    // Size the popover to the renderer's natural content height (top-anchored, grows
+    // downward), clamped to a max — past which the task list scrolls internally.
+    const POPOVER_MAX_HEIGHT = 600
     ipcMain.on(IpcChannels.WindowSetHeight, (_e, height: number) => {
       if (popover.isDestroyed()) return
-      const [w] = popover.getContentSize()
-      const h = Math.min(POPOVER_MAX_HEIGHT, Math.max(1, Math.round(height)))
-      popover.setContentSize(w, h)
+      const [w, current] = popover.getContentSize()
+      const h = Math.min(POPOVER_MAX_HEIGHT, Math.max(1, Math.ceil(height)))
+      if (h === current) return
+      popover.setContentSize(w, h, false)
     })
 
     // calculate the time remaining to show in ocon bar
