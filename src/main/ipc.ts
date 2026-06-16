@@ -135,9 +135,12 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle(IpcChannels.TasksFetch, async () => {
     try {
-      const tasks = await fetchScheduledTasks()
-      store.set('taskCache', tasks)
-      return tasks
+      const scheduled = await fetchScheduledTasks()
+      // Preserve planning tasks already in the cache; only refresh the scheduled ones
+      const planning = store.get('taskCache').filter((t) => t.fromPlanning === true)
+      const merged = [...planning, ...scheduled.filter((s) => !planning.find((p) => p.id === s.id))]
+      store.set('taskCache', merged)
+      return merged
     } catch {
       return store.get('taskCache')
     }
