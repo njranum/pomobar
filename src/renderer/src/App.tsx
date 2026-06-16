@@ -261,7 +261,7 @@ export default function App(): React.JSX.Element {
             </div>
           )}
           {/* Task picker + start */}
-          {!isActive && prompt === null && (
+          {!isActive && prompt === null && planningMode !== 'idle' && (
             <div className="flex flex-col gap-2">
               <TaskPicker
                 planningMode={planningMode}
@@ -324,9 +324,17 @@ export default function App(): React.JSX.Element {
           )}
 
           {planningMode === 'idle' && !isActive && (
-            <button onClick={handlePlanMyDay} className="rounded bg-blue-600 px-3 py-1 text-white">
-              Plan My Day
-            </button>
+            <>
+              <button
+                onClick={handlePlanMyDay}
+                className="rounded bg-blue-600 px-3 py-1 text-white"
+              >
+                Plan My Day
+              </button>
+              <p className="text-center text-xs text-gray-400">
+                Plan your day before starting focus tasks.
+              </p>
+            </>
           )}
         </div>
       )}
