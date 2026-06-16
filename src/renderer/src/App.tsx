@@ -38,10 +38,6 @@ export default function App(): React.JSX.Element {
   const [cfg, setCfg] = useState<PomodoroConfig | null>(null)
   const [configured, setConfigured] = useState(true)
 
-  useEffect(() => {
-    ;(document.activeElement as HTMLElement | null)?.blur()
-  }, [])
-
   // Report content height so the main process can size the popover to fit
   useEffect(() => {
     const report = (): void => window.api.setWindowHeight(document.documentElement.scrollHeight)
