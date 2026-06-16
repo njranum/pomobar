@@ -129,16 +129,16 @@ export default function App(): React.JSX.Element {
         <button onClick={() => setView('main')} className="self-start text-[13px] text-accent">
           ← Back
         </button>
-        <h2 className="text-[17px] font-semibold text-label">Settings</h2>
+        <h2 className="text-[13px] font-normal text-label">Settings</h2>
         {cfg && (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <label className="flex items-center justify-between gap-2 text-[13px] text-label">
               Focus (min)
               <input
                 type="number"
                 value={cfg.focusMinutes}
                 onChange={(e) => setCfg({ ...cfg, focusMinutes: Number(e.target.value) })}
-                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
+                className="w-12 rounded border-[0.5px] border-separator bg-fill px-1.5 py-0.5 text-right text-[12px] tabular-nums text-label"
               />
             </label>
             <label className="flex items-center justify-between gap-2 text-[13px] text-label">
@@ -147,7 +147,7 @@ export default function App(): React.JSX.Element {
                 type="number"
                 value={cfg.shortBreakMinutes}
                 onChange={(e) => setCfg({ ...cfg, shortBreakMinutes: Number(e.target.value) })}
-                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
+                className="w-12 rounded border-[0.5px] border-separator bg-fill px-1.5 py-0.5 text-right text-[12px] tabular-nums text-label"
               />
             </label>
             <label className="flex items-center justify-between gap-2 text-[13px] text-label">
@@ -156,7 +156,7 @@ export default function App(): React.JSX.Element {
                 type="number"
                 value={cfg.longBreakMinutes}
                 onChange={(e) => setCfg({ ...cfg, longBreakMinutes: Number(e.target.value) })}
-                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
+                className="w-12 rounded border-[0.5px] border-separator bg-fill px-1.5 py-0.5 text-right text-[12px] tabular-nums text-label"
               />
             </label>
             <label className="flex items-center justify-between gap-2 text-[13px] text-label">
@@ -165,7 +165,7 @@ export default function App(): React.JSX.Element {
                 type="number"
                 value={cfg.pomodorosPerCycle}
                 onChange={(e) => setCfg({ ...cfg, pomodorosPerCycle: Number(e.target.value) })}
-                className="w-16 rounded-md border-[0.5px] border-separator bg-fill px-2 py-1 text-right text-[13px] tabular-nums text-label"
+                className="w-12 rounded border-[0.5px] border-separator bg-fill px-1.5 py-0.5 text-right text-[12px] tabular-nums text-label"
               />
             </label>
             {errors.length > 0 && (
