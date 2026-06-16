@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTimer } from './hooks/useTimer'
 import { useStats } from './hooks/useStats'
 import { validateConfig } from '@/shared/validateConfig'
-import type { PomodoroConfig, PickerTask } from '@/shared/types'
+import type { PomodoroConfig, PickerTask, SessionType } from '@/shared/types'
 import SetupWizard from './components/SetupWizard'
 import DiscordSetup from './components/DiscordSetup'
 import TaskPicker from './components/TaskPicker'
@@ -11,6 +11,24 @@ const fmtFocus = (ms: number): string => {
   const m = Math.round(ms / 60000)
   return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`
 }
+
+const fmtClock = (ms: number): string => {
+  const total = Math.max(0, Math.ceil(ms / 1000))
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
+}
+
+const sessionLabel = (t: SessionType | null): string =>
+  t === 'shortBreak'
+    ? 'Short break'
+    : t === 'longBreak'
+      ? 'Long break'
+      : t === 'planning'
+        ? 'Planning'
+        : 'Focus'
+
+// Progress-ring geometry (SVG units)
+const RING_R = 74
+const RING_C = 2 * Math.PI * RING_R
 
 export default function App(): React.JSX.Element {
   const { snap, startFocus, pause, resume, cancel, endEarly, prompt, resolvePrompt } = useTimer() // live timer state
@@ -300,27 +318,91 @@ export default function App(): React.JSX.Element {
               </div>
             )}
 
-            {/* Active-session controls */}
-            {isActive && (
-              <div className="flex flex-col gap-2 rounded border border-gray-100 p-3">
-                <button
-                  onClick={() => (snap?.isPause ? resume() : pause())}
-                  className="rounded bg-gray-100 px-3 py-2"
-                >
-                  {snap?.isPause ? 'Resume' : 'Pause'}
-                </button>
-                <button
-                  onClick={() => cancel()}
-                  className="rounded bg-red-600 px-3 py-2 text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => endEarly()}
-                  className="rounded bg-green-600 px-3 py-2 text-white"
-                >
-                  End early + complete
-                </button>
+            {/* Active session */}
+            {isActive && snap && (
+              <div className="flex min-h-0 flex-1 flex-col">
+                {/* Ring (focal point) */}
+                <div className="flex flex-1 flex-col items-center justify-center gap-4">
+                  <div className="relative flex items-center justify-center">
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                      <circle
+                        cx="80"
+                        cy="80"
+                        r={RING_R}
+                        strokeWidth="6"
+                        className="fill-none stroke-track"
+                      />
+                      <circle
+                        cx="80"
+                        cy="80"
+                        r={RING_R}
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                        className="fill-none stroke-accent"
+                        strokeDasharray={RING_C}
+                        strokeDashoffset={
+                          RING_C *
+                          (1 -
+                            Math.min(
+                              1,
+                              Math.max(0, (snap.totalMs - snap.remainingMs) / (snap.totalMs || 1))
+                            ))
+                        }
+                        transform="rotate(-90 80 80)"
+                      />
+                    </svg>
+                    <div className="absolute flex flex-col items-center">
+                      <span className="text-[30px] font-medium leading-none tabular-nums text-label">
+                        {fmtClock(snap.remainingMs)}
+                      </span>
+                      <span className="mt-1 text-[11px] text-label-secondary">
+                        {sessionLabel(snap.sessionType)} · {snap.cyclePosition} of{' '}
+                        {snap.pomodorosPerCycle}
+                      </span>
+                    </div>
+                  </div>
+                  {snap.task && <p className="text-[12px] text-label-secondary">{snap.task}</p>}
+                </div>
+
+                {/* Controls */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => (snap.isPause ? resume() : pause())}
+                    className="flex items-center justify-center gap-2 rounded-md bg-fill px-3 py-2 text-[13px] font-medium text-label hover:bg-fill-hover"
+                  >
+                    {snap.isPause ? (
+                      'Resume'
+                    ) : (
+                      <>
+                        <svg
+                          width="9"
+                          height="11"
+                          viewBox="0 0 9 11"
+                          aria-hidden
+                          className="fill-label"
+                        >
+                          <rect width="3" height="11" rx="1" />
+                          <rect x="6" width="3" height="11" rx="1" />
+                        </svg>
+                        Pause
+                      </>
+                    )}
+                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => cancel()}
+                      className="flex-1 rounded-md bg-white/[0.06] px-3 py-2 text-[13px] font-medium text-danger hover:bg-white/[0.1]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => endEarly()}
+                      className="flex-1 rounded-md bg-white/[0.06] px-3 py-2 text-[13px] font-medium text-accent hover:bg-white/[0.1]"
+                    >
+                      End &amp; complete
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
