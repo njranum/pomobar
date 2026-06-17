@@ -26,13 +26,35 @@ $ npm run dev
 # For windows
 $ npm run build:win
 
-# For macOS
-$ npm run build:mac
-macOS notifications will FAIL on a fresh build - requires build to be signed, for now relying on adhoc signing with `codesign --force --dep --sign - release/mac-arm64/pomobar.app`
+# For macOS (build + ad-hoc sign in one step)
+$ npm run sign:mac
 
 # For Linux
 $ npm run build:linux
 ```
+
+### macOS ad-hoc signing
+
+The packaged macOS build is **unsigned** (`identity: null`), and native macOS
+notifications will silently fail until the bundle is signed. `npm run sign:mac`
+builds the app and ad-hoc signs it in one step. To sign an existing build
+manually:
+
+```bash
+$ codesign --force --deep --sign - release/mac-arm64/pomobar.app
+```
+
+The `-` identity means **ad-hoc** (no Apple Developer ID required). Verify it
+took with `codesign -dvv release/mac-arm64/pomobar.app` (look for
+`Signature=adhoc`).
+
+Notes:
+
+- Notifications do **not** fire under `npm run dev` — only from the packaged,
+  signed `.app`.
+- Ad-hoc signing satisfies codesign but not Gatekeeper notarization, so the
+  first launch may need right-click → **Open**, or clear the quarantine flag
+  with `xattr -dr com.apple.quarantine release/mac-arm64/pomobar.app`.
 
 ## Testing
 
