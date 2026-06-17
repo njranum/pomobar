@@ -37,7 +37,7 @@ new BrowserWindow({
 Then the renderer root must be transparent (or only lightly tinted) so the vibrancy shows
 through. Remove any opaque dark `background` on `<body>` / the root container.
 
-> ⚠️ Watch the close-on-blur behaviour. `transparent: true` + vibrancy can interact with
+> Watch the close-on-blur behaviour. `transparent: true` + vibrancy can interact with
 > existing window options. If the popover stops closing on blur, or the corners go wrong,
 > revert `transparent` and instead use a translucent dark fill (`rgba(28,28,30,0.72)`) with
 > `backdrop-filter: blur(30px)` on the root — it's a close-enough fallback. Test this in
@@ -156,13 +156,3 @@ All numbers (timer, counts, dates, durations) use `tabular-nums`. Sentence case 
 - The border box wrapping the session controls.
 
 ---
-
-## What NOT to touch
-
-- Timer state machine, cycle counting, timekeeping.
-- IPC channels and handlers.
-- electron-store schema and persistence.
-- Notion / Discord integration logic.
-- The task-picker interface contract (`TaskRef`) — only restyle its rendering.
-
-This is purely how it looks. If a change would require touching behaviour, stop and flag it.
