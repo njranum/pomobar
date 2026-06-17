@@ -11,6 +11,7 @@ short-vs-long-break decision are internal detail, so the top level stays a clean
 six-transition loop.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif','lineColor':'#94a3b8'}}}%%
 stateDiagram-v2
     direction LR
 
@@ -38,6 +39,20 @@ stateDiagram-v2
     focusPhase --> breakPhase : completes
     breakPhase --> focusPhase : startFocus(task)
     breakPhase --> idle       : completes
+
+    classDef idle fill:#64748b,stroke:#475569,color:#ffffff
+    classDef planning fill:#4f46e5,stroke:#3730a3,color:#ffffff
+    classDef focus fill:#e05252,stroke:#b91c1c,color:#ffffff
+    classDef paused fill:#f59e0b,stroke:#b45309,color:#ffffff
+    classDef shortBreak fill:#16a34a,stroke:#15803d,color:#ffffff
+    classDef longBreak fill:#0d9488,stroke:#0f766e,color:#ffffff
+
+    class idle idle
+    class planning planning
+    class focus focus
+    class paused paused
+    class shortBreak shortBreak
+    class longBreak longBreak
 ```
 
 ## States (`AppState`)
