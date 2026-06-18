@@ -23,6 +23,13 @@ import { needsPlanning, effectiveDate } from './planning'
 export let activeFocusTask: TaskRef | null = null
 export let activePlanningRowId: string | null = null
 
+function dropFromTaskCache(taskId: string): void {
+  store.set(
+    'taskCache',
+    store.get('taskCache').filter((t) => t.id !== taskId)
+  )
+}
+
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
   ipcMain.handle(IpcChannels.StoreGet, (_event, key: string) => {
@@ -102,7 +109,10 @@ export function registerIpcHandlers(): void {
     const task = activeFocusTask
     activeFocusTask = null
     timer.endEarly()
-    if (task?.id) markTaskDone(task.id)
+    if (task?.id) {
+      markTaskDone(task.id)
+      dropFromTaskCache(task.id)
+    }
   })
   // Stats
   ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
@@ -120,7 +130,10 @@ export function registerIpcHandlers(): void {
     (_e, { markComplete }: { markComplete: boolean }) => {
       const task = activeFocusTask
       activeFocusTask = null
-      if (markComplete && task?.id) markTaskDone(task.id)
+      if (markComplete && task?.id) {
+        markTaskDone(task.id)
+        dropFromTaskCache(task.id)
+      }
     }
   )
   // Notion
