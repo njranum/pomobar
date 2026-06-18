@@ -322,7 +322,10 @@ export default function App(): React.JSX.Element {
                 </div>
               )}
               {stats.streak > 0 && (
-                <p className={`mt-0.5 leading-tight ${SECONDARY}`}>{stats.streak}-day streak</p>
+                <p className={`mt-0.5 leading-tight ${SECONDARY}`}>
+                  🔥 {stats.streak}-day streak
+                  {stats.streakAtRisk && <span className="text-danger"> · at risk</span>}
+                </p>
               )}
             </div>
             <div className="border-t border-separator" />
