@@ -23,6 +23,19 @@ import { needsPlanning, effectiveDate } from './planning'
 export let activeFocusTask: TaskRef | null = null
 export let activePlanningRowId: string | null = null
 
+// Ids completed this session. markTaskDone() writes Notion fire-and-forget, so a
+// re-fetch can land before Notion reflects "Done" and resurrect the task — keep a
+// local tombstone set to filter those out until Notion catches up.
+const completedTaskIds = new Set<string>()
+
+function markTaskCompleted(taskId: string): void {
+  completedTaskIds.add(taskId)
+  store.set(
+    'taskCache',
+    store.get('taskCache').filter((t) => t.id !== taskId)
+  )
+}
+
 export function registerIpcHandlers(): void {
   const PROTECTED = new Set(['notionSecret', 'notionTargets'])
   ipcMain.handle(IpcChannels.StoreGet, (_event, key: string) => {
@@ -102,7 +115,10 @@ export function registerIpcHandlers(): void {
     const task = activeFocusTask
     activeFocusTask = null
     timer.endEarly()
-    if (task?.id) markTaskDone(task.id)
+    if (task?.id) {
+      markTaskDone(task.id)
+      markTaskCompleted(task.id)
+    }
   })
   // Stats
   ipcMain.handle(IpcChannels.StatsGet, () => computeStats())
@@ -120,7 +136,10 @@ export function registerIpcHandlers(): void {
     (_e, { markComplete }: { markComplete: boolean }) => {
       const task = activeFocusTask
       activeFocusTask = null
-      if (markComplete && task?.id) markTaskDone(task.id)
+      if (markComplete && task?.id) {
+        markTaskDone(task.id)
+        markTaskCompleted(task.id)
+      }
     }
   )
   // Notion
@@ -135,7 +154,7 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle(IpcChannels.TasksFetch, async () => {
     try {
-      const scheduled = await fetchScheduledTasks()
+      const scheduled = (await fetchScheduledTasks()).filter((s) => !completedTaskIds.has(s.id))
       // Preserve planning tasks already in the cache; only refresh the scheduled ones
       const planning = store.get('taskCache').filter((t) => t.fromPlanning === true)
       const merged = [...planning, ...scheduled.filter((s) => !planning.find((p) => p.id === s.id))]

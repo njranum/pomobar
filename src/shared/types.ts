@@ -60,4 +60,5 @@ export interface DayStats {
   pomodorosToday: number
   focusMsToday: number
   streak: number
+  streakAtRisk: boolean // streak carried in from prior days but today's focus isn't done yet
 }
