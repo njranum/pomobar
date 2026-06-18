@@ -74,7 +74,7 @@ stateDiagram-v2
     class synced synced
 ```
 
-The renderer surfaces a faint `●` dot whenever `syncQueue.length > 0` (`sync:pendingGet`).
+The pending-queue depth is exposed over the `sync:pendingGet` IPC channel.
 
 ---
 
