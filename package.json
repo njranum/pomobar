@@ -2,9 +2,26 @@
   "name": "pomobar",
   "version": "3.0.0",
   "description": "Electron pomodoro timer with Notion integration for task tracking.",
+  "license": "MIT",
   "main": "./out/main/index.js",
   "author": "nicholasr",
   "homepage": "https://github.com/njranum/pomobar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/njranum/pomobar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/njranum/pomobar/issues"
+  },
+  "keywords": [
+    "electron",
+    "typescript",
+    "react",
+    "macos",
+    "pomodoro",
+    "notion",
+    "menu-bar"
+  ],
   "engines": {
     "node": ">=22"
   },
