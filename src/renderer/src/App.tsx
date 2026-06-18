@@ -80,6 +80,22 @@ export default function App(): React.JSX.Element {
     })
   }, [])
 
+  // The popover restores focus to the last-focused control when it reopens, leaving
+  // a stray focus ring on the cog. Clear focus on open/close so nothing looks
+  // selected when the popover appears. (Tab navigation doesn't fire window focus.)
+  useEffect(() => {
+    const clearFocus = (): void => {
+      const el = document.activeElement
+      if (el instanceof HTMLElement && el !== document.body) el.blur()
+    }
+    window.addEventListener('focus', clearFocus)
+    window.addEventListener('blur', clearFocus)
+    return () => {
+      window.removeEventListener('focus', clearFocus)
+      window.removeEventListener('blur', clearFocus)
+    }
+  }, [])
+
   const canStart =
     selectedTask !== null &&
     (snap?.state === 'idle' || snap?.state === 'shortBreak' || snap?.state === 'longBreak')
