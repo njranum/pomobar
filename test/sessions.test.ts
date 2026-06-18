@@ -125,6 +125,7 @@ describe('computeStats', () => {
     expect(stats.pomodorosToday).toBe(0)
     expect(stats.focusMsToday).toBe(0)
     expect(stats.streak).toBe(0)
+    expect(stats.streakAtRisk).toBe(false)
   })
 })
 
@@ -132,7 +133,7 @@ describe('computeStreak', () => {
   beforeEach(() => vi.useFakeTimers())
   afterEach(() => vi.useRealTimers())
 
-  it('counts consecutive days up to the first gap', () => {
+  it('counts consecutive days up to the first gap (today secured)', () => {
     vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
     const streak = computeStreak([
       record('2026-06-16T10:00:00.000Z'),
@@ -141,7 +142,18 @@ describe('computeStreak', () => {
       // gap on the 13th
       record('2026-06-12T10:00:00.000Z'),
     ])
-    expect(streak).toBe(3)
+    expect(streak).toEqual({ count: 3, atRisk: false })
+  })
+
+  it('carries the streak in from yesterday when today is not done yet (at risk)', () => {
+    // It is the third day and no focus session has been logged today, but the
+    // run through the previous two days is unbroken — surface it, flagged at risk.
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    const streak = computeStreak([
+      record('2026-06-15T10:00:00.000Z'),
+      record('2026-06-14T10:00:00.000Z'),
+    ])
+    expect(streak).toEqual({ count: 2, atRisk: true })
   })
 
   it('treats the day as not yet rolled over before 4am (cutoff on "now")', () => {
@@ -152,15 +164,15 @@ describe('computeStreak', () => {
       record('2026-06-15T10:00:00.000Z'), // also the 15th
       record('2026-06-14T10:00:00.000Z'),
     ])
-    expect(streak).toBe(2)
+    expect(streak).toEqual({ count: 2, atRisk: false })
   })
 
   it('attributes a pre-4am session to the previous day (cutoff on the record)', () => {
-    // Daytime now, but the only session was logged at 03:30 — which belongs to
-    // the previous day, so it does not establish a streak for today.
+    // Daytime now, but the only session was logged at 03:30 — which belongs to the
+    // previous day. Today isn't secured yet, so it counts as a 1-day streak at risk.
     vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
     const streak = computeStreak([record('2026-06-16T03:30:00.000Z')])
-    expect(streak).toBe(0)
+    expect(streak).toEqual({ count: 1, atRisk: true })
   })
 
   it('ignores non-focus and uncompleted sessions', () => {
@@ -169,11 +181,18 @@ describe('computeStreak', () => {
       record('2026-06-16T10:00:00.000Z', { type: 'shortBreak' }),
       record('2026-06-16T11:00:00.000Z', { completed: false }),
     ])
-    expect(streak).toBe(0)
+    expect(streak).toEqual({ count: 0, atRisk: false })
+  })
+
+  it('returns a broken streak when yesterday was also missed', () => {
+    // Today not done and yesterday (the 15th) has no session — the run is gone.
+    vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
+    const streak = computeStreak([record('2026-06-14T10:00:00.000Z')])
+    expect(streak).toEqual({ count: 0, atRisk: false })
   })
 
   it('returns 0 for no sessions', () => {
     vi.setSystemTime(new Date('2026-06-16T12:00:00.000Z'))
-    expect(computeStreak([])).toBe(0)
+    expect(computeStreak([])).toEqual({ count: 0, atRisk: false })
   })
 })

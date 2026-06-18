@@ -124,10 +124,12 @@ export function computeStats(): DayStats {
   const allSessions = store.get('sessions')
   const today = new Date().toISOString().slice(0, 10)
   const todays = allSessions.filter((s) => s.date === today && s.type === 'focus' && s.completed)
+  const streak = computeStreak(allSessions)
   return {
     pomodorosToday: todays.length,
     focusMsToday: todays.reduce((a, s) => a + s.durationMs, 0),
-    streak: computeStreak(allSessions),
+    streak: streak.count,
+    streakAtRisk: streak.atRisk,
   }
 }
 
@@ -139,18 +141,22 @@ function effectiveDateForTs(ts: number): string {
   return ref.toISOString().split('T')[0]
 }
 
-export function computeStreak(sessions: SessionRecord[]): number {
+export function computeStreak(sessions: SessionRecord[]): { count: number; atRisk: boolean } {
   const focusDays = new Set(
     sessions
       .filter((s) => s.type === 'focus' && s.completed)
       .map((s) => effectiveDateForTs(new Date(s.startTime).getTime()))
   )
-  let streak = 0
   const d = new Date()
   if (d.getHours() < 4) d.setDate(d.getDate() - 1)
+  const completedToday = focusDays.has(d.toISOString().split('T')[0])
+  // If today's focus isn't logged yet, count the streak carried in from yesterday so
+  // the user can see the run they stand to lose by not completing a session today.
+  if (!completedToday) d.setDate(d.getDate() - 1)
+  let count = 0
   while (focusDays.has(d.toISOString().split('T')[0])) {
-    streak++
+    count++
     d.setDate(d.getDate() - 1)
   }
-  return streak
+  return { count, atRisk: count > 0 && !completedToday }
 }

@@ -158,14 +158,19 @@ export async function fetchPlanningTasks(rowId: string): Promise<PickerTask[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const props = page.properties as Record<string, any>
   const relations: Array<{ id: string }> = props['Tasks to Complete']?.relation ?? []
-  return Promise.all(
+  const entries = await Promise.all(
     relations.map(async ({ id }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const t = (await (c.pages as any).retrieve({ page_id: id })) as any
       const title: string = t.properties?.Name?.title?.[0]?.plain_text ?? 'Untitled'
-      return { id, title, scheduledDate: null, overdue: false, fromPlanning: true }
+      const status: string | null = t.properties?.Status?.select?.name ?? null
+      return {
+        task: { id, title, scheduledDate: null, overdue: false, fromPlanning: true },
+        status,
+      }
     })
   )
+  return entries.filter((e) => e.status !== 'Done' && e.status !== 'Abandoned').map((e) => e.task)
 }
 
 export async function readPlanningGoals(
