@@ -23,11 +23,9 @@ It's a single-user macOS app, built to live quietly in the menu bar and never ge
 
 ## Demo
 
-<!-- DEMO VIDEO/GIF: one full cycle, ~15s — pick a task → start focus → tick → completion
-     banner → break auto-starts → "Mark complete" write-back. A GIF embeds inline on GitHub;
-     a video can go in a Releases asset and be linked. -->
+![A full focus → break → mark-complete cycle](docs/screenshots/pomo_demo.gif)
 
-> _Demo placeholder — a full focus → break → mark-complete cycle._
+> _One full cycle — pick a task, start focus, tick down, then the mark-complete write-back to Notion._
 
 ## Features
 
