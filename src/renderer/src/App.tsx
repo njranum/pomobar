@@ -252,7 +252,7 @@ export default function App(): React.JSX.Element {
     <div className="flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2">
-        <span className="text-[13px] font-medium text-label">Pomo app</span>
+        <span className="text-[13px] font-medium text-label">Pomobar</span>
         <div className="flex items-center gap-3">
           {!isActive && prompt === null && planningMode === 'done' && (
             <button
