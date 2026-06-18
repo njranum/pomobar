@@ -23,6 +23,7 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
+    "sign:mac": "npm run build:mac && codesign --force --deep --sign - release/mac-arm64/pomobar.app",
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
