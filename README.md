@@ -83,6 +83,40 @@ It's a single-user macOS app, built to live quietly in the menu bar and never ge
 
 > _Durations, pomodoros per cycle, and the Notion / Discord connection status._
 
+## How it connects to Notion
+
+The menu-bar timer and the Notion workspace are two views of the same data. pomobar
+reads your tasks straight from Notion, and writes every session — and every completion —
+back to it, so the app and your workspace never drift apart.
+
+![Task picker (app)](docs/screenshots/pomo_select_focus_task.png)
+
+![DB Focus Tasks (Notion)](docs/screenshots/pomo_notion_focus_tasks.png)
+
+> _Top: the app's task picker. Bottom: DB Focus Tasks in Notion — the picker is reading my real scheduled tasks straight from Notion._
+
+![Active session (app)](docs/screenshots/pomo_tick.png)
+
+![DB Sessions (Notion)](docs/screenshots/pomo_notion_sessions.png)
+
+> _Top: a session ticking down in the app. Bottom: DB Sessions in Notion — every completed session is logged back as a row, with its duration, type, cycle and task._
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/pomo_mark_complete.png" width="100%"></td>
+    <td><img src="docs/screenshots/pomo_notion_marked_complete.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><sub>Left: the app's mark-complete prompt. Right: the same task in Notion — confirming it writes Status = Done and a completion date straight back.</sub></td>
+  </tr>
+</table>
+
+![Plan-your-day gate (app)](docs/screenshots/pomo_plan_my_day.png)
+
+![Planning row (Notion)](docs/screenshots/pomo_notion_planning.png)
+
+> _Top: the plan-your-day gate in the app. Bottom: the matching row in Notion — the day's plan and goals live in a single planning row._
+
 ## Architecture
 
 pomobar is an Electron app, so it runs across **three processes** with a hard security
