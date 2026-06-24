@@ -55,33 +55,24 @@ It's a single-user macOS app, built to live quietly in the menu bar and never ge
 
 ## Screenshots
 
-![The plan-your-day gate](docs/screenshots/pomo_plan_my_day.png)
-
-> _Planning is gated before focus work — pomobar nudges you to lay out the day first._
-
-![Task picker with a task selected](docs/screenshots/pomo_select_focus_task.png)
-
-> _Today's plan and scheduled tasks, pulled straight from Notion — pick one and start the session._
-
-![Mark-complete prompt](docs/screenshots/pomo_mark_complete.png)
-
-> _When a focus session ends on a task, pomobar offers to mark it done and writes that back to Notion._
-
-![Daily goals and streak](docs/screenshots/pomo_goals.png)
-
-> _The goals strip tracks pomodoros and focus minutes against your local targets, with a running streak._
-
-![Notion connection setup](docs/screenshots/pomo_notion_setup.png)
-
-> _The first-run wizard connects your integration token and databases._
-
-![Discord webhook setup](docs/screenshots/pomo_discord_setup.png)
-
-> _An optional webhook posts a message at each session boundary._
-
-![Settings screen](docs/screenshots/pomo_config.png)
-
-> _Durations, pomodoros per cycle, and the Notion / Discord connection status._
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_plan_my_day.png" width="100%"><br><sub>Planning is gated before focus work — pomobar nudges you to lay out the day first.</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_select_focus_task.png" width="100%"><br><sub>Today's plan and scheduled tasks, pulled straight from Notion — pick one and start the session.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_mark_complete.png" width="100%"><br><sub>When a focus session ends on a task, pomobar offers to mark it done and writes that back to Notion.</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_goals.png" width="100%"><br><sub>The goals strip tracks pomodoros and focus minutes against your local targets, with a running streak.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_notion_setup.png" width="100%"><br><sub>The first-run wizard connects your integration token and databases.</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_discord_setup.png" width="100%"><br><sub>An optional webhook posts a message at each session boundary.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_config.png" width="100%"><br><sub>Durations, pomodoros per cycle, and the Notion / Discord connection status.</sub></td>
+    <td width="50%" valign="top"></td>
+  </tr>
+</table>
 
 ## How it connects to Notion
 
