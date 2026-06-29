@@ -55,33 +55,58 @@ It's a single-user macOS app, built to live quietly in the menu bar and never ge
 
 ## Screenshots
 
-![The plan-your-day gate](docs/screenshots/pomo_plan_my_day.png)
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_plan_my_day.png" width="100%"><br><sub>Planning is gated before focus work — pomobar nudges you to lay out the day first.</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_select_focus_task.png" width="100%"><br><sub>Today's plan and scheduled tasks, pulled straight from Notion — pick one and start the session.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_mark_complete.png" width="100%"><br><sub>When a focus session ends on a task, pomobar offers to mark it done and writes that back to Notion.</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_goals.png" width="100%"><br><sub>The goals strip tracks pomodoros and focus minutes against your local targets, with a running streak.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_notion_setup.png" width="100%"><br><sub>The first-run wizard connects your integration token and databases.</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_discord_setup.png" width="100%"><br><sub>An optional webhook posts a message at each session boundary.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/pomo_config.png" width="100%"><br><sub>Durations, pomodoros per cycle, and the Notion / Discord connection status.</sub></td>
+    <td width="50%" valign="top"></td>
+  </tr>
+</table>
 
-> _Planning is gated before focus work — pomobar nudges you to lay out the day first._
+## How it connects to Notion
 
-![Task picker with a task selected](docs/screenshots/pomo_select_focus_task.png)
+The menu-bar timer and the Notion workspace are two views of the same data. pomobar
+reads your tasks straight from Notion, and writes every session — and every completion —
+back to it, so the app and your workspace never drift apart.
 
-> _Today's plan and scheduled tasks, pulled straight from Notion — pick one and start the session._
+![Task picker (app)](docs/screenshots/pomo_select_focus_task.png)
 
-![Mark-complete prompt](docs/screenshots/pomo_mark_complete.png)
+![DB Focus Tasks (Notion)](docs/screenshots/pomo_notion_focus_tasks.png)
 
-> _When a focus session ends on a task, pomobar offers to mark it done and writes that back to Notion._
+> _Top: the app's task picker. Bottom: DB Focus Tasks in Notion — the picker is reading my real scheduled tasks straight from Notion._
 
-![Daily goals and streak](docs/screenshots/pomo_goals.png)
+![Active session (app)](docs/screenshots/pomo_tick.png)
 
-> _The goals strip tracks pomodoros and focus minutes against your local targets, with a running streak._
+![DB Sessions (Notion)](docs/screenshots/pomo_notion_sessions.png)
 
-![Notion connection setup](docs/screenshots/pomo_notion_setup.png)
+> _Top: a session ticking down in the app. Bottom: DB Sessions in Notion — every completed session is logged back as a row, with its duration, type, cycle and task._
 
-> _The first-run wizard connects your integration token and databases._
+<table>
+  <tr>
+    <td><img src="docs/screenshots/pomo_mark_complete.png" width="100%"></td>
+    <td><img src="docs/screenshots/pomo_notion_marked_complete.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><sub>Left: the app's mark-complete prompt. Right: the same task in Notion — confirming it writes Status = Done and a completion date straight back.</sub></td>
+  </tr>
+</table>
 
-![Discord webhook setup](docs/screenshots/pomo_discord_setup.png)
+![Plan-your-day gate (app)](docs/screenshots/pomo_plan_my_day.png)
 
-> _An optional webhook posts a message at each session boundary._
+![Planning row (Notion)](docs/screenshots/pomo_notion_planning.png)
 
-![Settings screen](docs/screenshots/pomo_config.png)
-
-> _Durations, pomodoros per cycle, and the Notion / Discord connection status._
+> _Top: the plan-your-day gate in the app. Bottom: the matching row in Notion — the day's plan and goals live in a single planning row._
 
 ## Architecture
 
